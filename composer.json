@@ -1,0 +1,17 @@
+{
+    "name": "paymongo/module-magento2-paymongo",
+    "description": "Official PayMongo Plugin for Magento",
+    "type": "magento2-module",
+    "license": "MIT",
+    "require": {
+        "php": ">=8.1",
+        "ext-curl": "*",
+        "ext-json": "*",
+        "ext-mbstring": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "PayMongo\\Magento2\\": "src/"
+        }
+    }
+}
