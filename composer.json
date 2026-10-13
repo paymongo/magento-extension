@@ -1,17 +1,37 @@
 {
-    "name": "paymongo/module-magento2-paymongo",
-    "description": "Official PayMongo Plugin for Magento",
-    "type": "magento2-module",
-    "license": "MIT",
-    "require": {
-        "php": ">=8.1",
-        "ext-curl": "*",
-        "ext-json": "*",
-        "ext-mbstring": "*"
-    },
-    "autoload": {
-        "psr-4": {
-            "PayMongo\\Magento2\\": "src/"
-        }
+  "name": "paymongo/module-magento2-paymongo",
+  "version": "2.0.0",
+  "description": "PayMongo payment gateway integration for Magento 2 — supports cards, GCash, GrabPay, Maya, GooglePay, ShopeePay, BillEase, BPI Online, UnionBank Online, QR Ph, and direct online banking. Luma compatible out of the box; Hyvä Checkout support ships separately as paymongo/module-magento2-paymongo-hyva.",
+  "type": "magento2-module",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "DevTeam",
+      "email": "support@devteam.com",
+      "homepage": "https://devteam.com",
+      "role": "Developer and maintainer"
     }
+  ],
+  "require": {
+    "php": ">=8.1",
+    "magento/framework": ">=102.0",
+    "magento/module-payment": ">=100.4",
+    "magento/module-checkout": ">=100.4",
+    "magento/module-sales": ">=103.0"
+  },
+  "suggest": {
+    "paymongo/module-magento2-paymongo-hyva": "Hyvä Checkout support (place-order redirect service, method icons, checkout layout) — registers itself only when hyva-themes/magento2-hyva-checkout is installed"
+  },
+  "autoload": {
+    "files": [
+      "registration.php"
+    ],
+    "psr-4": {
+      "DevTeam\\Paymongo\\": ""
+    }
+  },
+  "minimum-stability": "stable",
+  "replace": {
+    "devteam/module-paymongo": "self.version"
+  }
 }
