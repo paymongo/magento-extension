@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="paymongo_webhook_events" resource="default" engine="innodb"
+           comment="Processed PayMongo webhook event IDs for replay protection">
+        <column xsi:type="varchar" name="event_id" nullable="false" length="64" comment="PayMongo event ID"/>
+        <column xsi:type="timestamp" name="processed_at" nullable="false" default="CURRENT_TIMESTAMP"
+                comment="When the event was first processed"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="event_id"/>
+        </constraint>
+    </table>
+</schema>

@@ -1,0 +1,15 @@
+<?php
+
+declare(strict_types=1);
+
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+
+/** @var Template $block */
+/** @var Escaper $escaper */
+?>
+<div>
+    <p class="p-4 bg-gray-100 rounded-lg text-sm">
+        <?= $escaper->escapeHtml(__('You will be redirected to PayMongo to complete your payment securely.')) ?>
+    </p>
+</div>

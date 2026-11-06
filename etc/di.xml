@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="Magento\Framework\GraphQl\Schema\SchemaGenerator"
+                type="PayMongo\Payment\Model\GraphQl\SchemaGenerator"/>
+
+    <type name="PayMongo\Payment\Logger\Handler">
+        <arguments>
+            <argument name="filesystem" xsi:type="object">Magento\Framework\Filesystem\Driver\File</argument>
+        </arguments>
+    </type>
+    <type name="PayMongo\Payment\Logger\Logger">
+        <arguments>
+            <argument name="name" xsi:type="string">paymongo</argument>
+            <argument name="handlers" xsi:type="array">
+                <item name="system" xsi:type="object">PayMongo\Payment\Logger\Handler</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <!--
+        Every PayMongo payment method is built whenever checkout lists payment methods, but
+        capture and refund (CaptureAndRefund, shared by all of them) are only needed when an
+        invoice or credit memo is created. The proxy defers building it, and PaymentCapture's
+        invoice/order/lock dependencies, until then.
+    -->
+    <type name="PayMongo\Payment\Model\Method\AbstractPaymongoMethod">
+        <arguments>
+            <argument name="captureAndRefund" xsi:type="object">PayMongo\Payment\Model\Method\CaptureAndRefund\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="PayMongo\Payment\Model\PaymongoPayment">
+        <arguments>
+            <argument name="captureAndRefund" xsi:type="object">PayMongo\Payment\Model\Method\CaptureAndRefund\Proxy</argument>
+        </arguments>
+    </type>
+    <!--
+        Refuse an invoice for only part of an Authorize Only order while its card hold can still
+        be captured: PayMongo captures a hold once, in full. The admin already invoices these
+        orders in full; this covers the REST API (PayOperation) and custom code (Invoice::register()).
+        Runs before the invoice changes the order or the payment is captured.
+    -->
+    <type name="Magento\Sales\Model\Order\Invoice">
+        <plugin name="paymongo_reject_partial_invoice"
+                type="PayMongo\Payment\Plugin\Sales\RejectPartialInvoicePlugin"/>
+    </type>
+    <type name="Magento\Sales\Model\Order\Invoice\PayOperation">
+        <plugin name="paymongo_reject_partial_invoice"
+                type="PayMongo\Payment\Plugin\Sales\RejectPartialInvoicePlugin"/>
+    </type>
+</config>

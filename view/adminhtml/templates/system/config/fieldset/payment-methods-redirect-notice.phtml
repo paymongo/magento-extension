@@ -1,0 +1,21 @@
+<?php
+/**
+ * @var \PayMongo\Payment\Block\Adminhtml\Render\PaymentMethodsRedirectNotice $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+?>
+<div class="paymongo-info-card">
+    <div class="paymongo-info-card__text">
+        <img class="paymongo-redirect-notice__logo"
+            src="<?= $escaper->escapeUrl($block->getViewFileUrl('PayMongo_Payment::images/paymongo-logo.webp')) ?>"
+            alt="<?= $escaper->escapeHtmlAttr(__('PayMongo')) ?>" />
+        <p class="paymongo-info-card__note">
+            <?= $escaper->escapeHtml(__('PayMongo has its own configuration tab, with all payment methods, credentials, and checkout display settings in one place.')) ?>
+        </p>
+    </div>
+    <div class="paymongo-info-card__actions">
+        <a href="<?= $escaper->escapeUrl($block->getPaymongoConfigUrl()) ?>" class="paymongo-btn paymongo-btn--primary">
+            <?= $escaper->escapeHtml(__('Go to PayMongo Configuration')) ?>
+        </a>
+    </div>
+</div>

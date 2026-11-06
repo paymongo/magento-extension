@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <!--
+        Trigger card payment capture when a shipment is created.
+        Only acts when the card payment action is set to 'authorize' (authorize-now-capture-later).
+        Runs after the shipment is committed, so a failure while invoicing cannot roll the
+        shipment back after PayMongo has charged the customer.
+    -->
+    <event name="sales_order_shipment_save_commit_after">
+        <observer name="paymongo_capture_on_shipment"
+                  instance="PayMongo\Payment\Observer\CaptureOnShipment"/>
+    </event>
+    <!--
+        When a PayMongo order is cancelled, however it is cancelled (the customer leaving
+        PayMongo's page, the admin, or Magento's cron for stale pending orders):
+        - release the card hold of an Authorize Only order;
+        - close PayMongo's payment page, so the customer cannot pay for the cancelled order (PYM-32).
+    -->
+    <event name="order_cancel_after">
+        <observer name="paymongo_release_hold_on_cancel"
+                  instance="PayMongo\Payment\Observer\ReleaseHoldOnCancel"/>
+        <observer name="paymongo_close_checkout_on_cancel"
+                  instance="PayMongo\Payment\Observer\CloseCheckoutOnCancel"/>
+    </event>
+</config>

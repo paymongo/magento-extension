@@ -1,17 +1,34 @@
 {
     "name": "paymongo/module-magento2-paymongo",
-    "description": "Official PayMongo Plugin for Magento",
+    "version": "2.0.1",
+    "description": "PayMongo payment gateway integration for Magento 2 \u2014 supports cards, GCash, GrabPay, Maya, GooglePay, ShopeePay, BillEase, BPI Online, UnionBank Online, and QR Ph. Luma compatible out of the box.",
     "type": "magento2-module",
     "license": "MIT",
+    "authors": [
+        {
+            "name": "DevTeam",
+            "email": "support@devteam.com",
+            "homepage": "https://devteam.com",
+            "role": "Developer and maintainer"
+        }
+    ],
     "require": {
         "php": ">=8.1",
-        "ext-curl": "*",
-        "ext-json": "*",
-        "ext-mbstring": "*"
+        "magento/framework": ">=102.0",
+        "magento/module-payment": ">=100.4",
+        "magento/module-checkout": ">=100.4",
+        "magento/module-sales": ">=103.0"
     },
     "autoload": {
+        "files": [
+            "registration.php"
+        ],
         "psr-4": {
-            "PayMongo\\Magento2\\": "src/"
+            "PayMongo\\Payment\\": ""
         }
+    },
+    "minimum-stability": "stable",
+    "replace": {
+        "devteam/module-paymongo": "self.version"
     }
 }

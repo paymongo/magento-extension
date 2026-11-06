@@ -1,0 +1,156 @@
+<?php
+/**
+ * @var \PayMongo\Payment\Block\Adminhtml\Render\AccountCapabilities $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+$checkUrl = $block->getCheckUrl();
+?>
+<div class="paymongo-info-card" id="paymongo-capabilities">
+    <div class="paymongo-info-card__text">
+        <p class="paymongo-info-card__note">
+            <?= $escaper->escapeHtml(__(
+                'This checks whether PayMongo has approved each method below for LIVE transactions — a separate, '
+                . 'account-level approval independent of the "Enabled" toggle on each method. It has no effect on '
+                . 'test mode: PayMongo\'s test mode already lets you simulate any method below regardless of this '
+                . 'status, so you can validate your integration before requesting to go live. Click below to badge '
+                . 'each method\'s title with its current live-approval status — hover a badge that comes back '
+                . '"Not Live-Ready" for what Paymongo still needs from you before it will activate that method.'
+            )) ?>
+        </p>
+    </div>
+    <div class="paymongo-info-card__actions">
+        <button type="button" id="paymongo-capabilities-btn" class="paymongo-btn paymongo-btn--secondary">
+            <?= $escaper->escapeHtml(__('Check PayMongo Account Status')) ?>
+        </button>
+        <span id="paymongo-capabilities-spinner" class="paymongo-toolbar__spinner" style="display:none;">
+            <span class="paymongo-spinner"></span><?= $escaper->escapeHtml(__('Checking…')) ?>
+        </span>
+    </div>
+</div>
+
+<div id="paymongo-capabilities-error"
+     class="message message-error"
+     style="display:none; margin-top:1rem;"></div>
+
+<script>
+(function () {
+    'use strict';
+
+    var btn     = document.getElementById('paymongo-capabilities-btn');
+    var spinner = document.getElementById('paymongo-capabilities-spinner');
+    var errBox  = document.getElementById('paymongo-capabilities-error');
+
+    // Config group id (within the paymongo_payment_methods section) -> PayMongo API
+    // payment_method_type. bpi_online uses PayMongo's 'dob' type; unionbank_online uses
+    // 'dob_ubp', which the capabilities API reports separately.
+    var SECTION_ID = 'paymongo_payment_methods';
+    var GROUP_METHOD_MAP = {
+        'card': 'card',
+        'gcash': 'gcash',
+        'grab_pay': 'grab_pay',
+        'maya': 'paymaya',
+        'google_pay': 'google_pay_card',
+        'shopeepay': 'shopee_pay',
+        'billease': 'billease',
+        'bpi_online': 'dob',
+        'unionbank_online': 'dob_ubp',
+        'qrph': 'qrph'
+    };
+
+    // Tooltip carried on each badge as a native title attribute. The pending one is the
+    // point of the whole panel: Paymongo grants live approval per method against business
+    // documents submitted in their dashboard, and nothing in Magento can move that along,
+    // so a bare "Not Live-Ready" badge otherwise leaves a merchant with no next step.
+    var BADGE = {
+        active: {
+            label: '<?= $escaper->escapeJs(__('Live-Ready')) ?>',
+            cls: 'paymongo-badge-success',
+            title: '<?= $escaper->escapeJs(__(
+                'Paymongo has approved this method for live transactions on this account.'
+            )) ?>'
+        },
+        pending: {
+            label: '<?= $escaper->escapeJs(__('Not Live-Ready')) ?>',
+            cls: 'paymongo-badge-neutral',
+            title: '<?= $escaper->escapeJs(__(
+                'Paymongo has not activated this method for live transactions yet — activation is '
+                . 'granted by Paymongo, not from this page. Log in to the Paymongo Dashboard '
+                . '(dashboard.paymongo.com) in live mode and open Settings → Payment Methods to '
+                . 'request it: most methods need business documents submitted for approval, and '
+                . 'the documents vary by entity type. Test mode is unaffected in the meantime — '
+                . 'you can keep testing this method while the request is pending.'
+            )) ?>'
+        }
+    };
+
+    function buildBadge(anchorId, isActive) {
+        var text  = isActive ? BADGE.active : BADGE.pending;
+        var badge = document.createElement('span');
+
+        // Built as a DOM node rather than an HTML string so the tooltip text needs no
+        // second round of attribute escaping on top of escapeJs above.
+        badge.className = 'paymongo-badge paymongo-capability-badge ' + text.cls;
+        badge.setAttribute('data-for', anchorId);
+        badge.textContent = text.label;
+        badge.title = text.title;
+
+        return badge;
+    }
+
+    function applyBadges(active) {
+        Object.keys(GROUP_METHOD_MAP).forEach(function (groupId) {
+            var anchorId = SECTION_ID + '_' + groupId + '-head';
+            var anchor = document.getElementById(anchorId);
+            if (!anchor) {
+                return;
+            }
+
+            var type = GROUP_METHOD_MAP[groupId];
+            var isActive = active.indexOf(type) !== -1;
+            var badge = buildBadge(anchorId, isActive);
+            var existing = anchor.querySelector(
+                '.paymongo-capability-badge[data-for="' + anchorId + '"]'
+            );
+
+            if (existing) {
+                existing.parentNode.replaceChild(badge, existing);
+            } else {
+                // Appended inside the -head span (not as a sibling) so it renders on the
+                // same line as the method name, not as a block-level element below it.
+                anchor.appendChild(badge);
+            }
+        });
+    }
+
+    btn.addEventListener('click', function () {
+        errBox.style.display = 'none';
+        spinner.style.display = '';
+        btn.disabled = true;
+
+        fetch('<?= $escaper->escapeJs($checkUrl) ?>', {
+            method: 'GET',
+            headers: {'X-Requested-With': 'XMLHttpRequest'}
+        })
+        .then(function (resp) { return resp.json(); })
+        .then(function (data) {
+            spinner.style.display = 'none';
+            btn.disabled = false;
+
+            if (data.error) {
+                errBox.textContent = data.error;
+                errBox.style.display = '';
+                return;
+            }
+
+            applyBadges(data.active || []);
+        })
+        .catch(function (err) {
+            spinner.style.display = 'none';
+            btn.disabled = false;
+            errBox.textContent = '<?= $escaper->escapeJs(__('Request failed. Check browser console for details.')) ?>';
+            errBox.style.display = '';
+            console.error('PayMongo capabilities check error:', err);
+        });
+    });
+}());
+</script>

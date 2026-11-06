@@ -1,0 +1,530 @@
+<?php
+/**
+ * @var \Magento\Backend\Block\Template $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+$fetchUrl = $block->getUrl('paymongo/reconciliation/fetch');
+$exportUrl = $block->getUrl('paymongo/reconciliation/export');
+?>
+<div class="admin__page-section">
+    <p class="note">
+        <?= $escaper->escapeHtml(__('Compare PayMongo payment records against Magento orders for a given date range. Discrepancies are highlighted below the results tables.')) ?>
+    </p>
+
+    <div class="paymongo-toolbar" id="paymongo-reconciliation-form">
+        <div class="paymongo-toolbar__filters">
+            <div class="paymongo-toolbar__group">
+                <label class="paymongo-toolbar__label" for="paymongo_date_from">
+                    <?= $escaper->escapeHtml(__('Date From')) ?>
+                </label>
+                <input type="date"
+                       id="paymongo_date_from"
+                       name="date_from"
+                       class="admin__control-text"
+                       required="required"/>
+            </div>
+            <div class="paymongo-toolbar__group">
+                <label class="paymongo-toolbar__label" for="paymongo_date_to">
+                    <?= $escaper->escapeHtml(__('Date To')) ?>
+                </label>
+                <input type="date"
+                       id="paymongo_date_to"
+                       name="date_to"
+                       class="admin__control-text"
+                       required="required"/>
+            </div>
+            <div class="paymongo-toolbar__group">
+                <span class="paymongo-toolbar__label"><?= $escaper->escapeHtml(__('Quick Range')) ?></span>
+                <div class="paymongo-preset-group">
+                    <button type="button" class="paymongo-preset-btn" data-preset="today">
+                        <?= $escaper->escapeHtml(__('Today')) ?>
+                    </button>
+                    <button type="button" class="paymongo-preset-btn" data-preset="7d">
+                        <?= $escaper->escapeHtml(__('Last 7 Days')) ?>
+                    </button>
+                    <button type="button" class="paymongo-preset-btn" data-preset="30d">
+                        <?= $escaper->escapeHtml(__('Last 30 Days')) ?>
+                    </button>
+                    <button type="button" class="paymongo-preset-btn" data-preset="month">
+                        <?= $escaper->escapeHtml(__('This Month')) ?>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="paymongo-toolbar__actions">
+            <span id="paymongo-reconcile-spinner" class="paymongo-toolbar__spinner" style="display:none;">
+                <span class="paymongo-spinner"></span><?= $escaper->escapeHtml(__('Loading…')) ?>
+            </span>
+            <button id="paymongo-export-btn" type="button" class="paymongo-btn paymongo-btn--secondary">
+                <?= $escaper->escapeHtml(__('Export CSV')) ?>
+            </button>
+            <button id="paymongo-reconcile-btn" type="button" class="paymongo-btn paymongo-btn--primary">
+                <?= $escaper->escapeHtml(__('Run Reconciliation')) ?>
+            </button>
+        </div>
+    </div>
+
+    <p id="paymongo-reconcile-placeholder" class="note">
+        <?= $escaper->escapeHtml(__('Select a date range above (or use a quick range) and click "Run Reconciliation" to see results.')) ?>
+    </p>
+
+    <div id="paymongo-reconcile-error"
+         class="message message-error"
+         style="display:none; margin-top:1rem;"></div>
+
+    <div id="paymongo-summary-stats" class="paymongo-stats-row" style="display:none;">
+        <div class="paymongo-stat-card">
+            <span class="paymongo-stat-value" id="paymongo-stat-payments">0</span>
+            <span class="paymongo-stat-label"><?= $escaper->escapeHtml(__('Payments')) ?></span>
+        </div>
+        <div class="paymongo-stat-card">
+            <span class="paymongo-stat-value" id="paymongo-stat-refunds">0</span>
+            <span class="paymongo-stat-label"><?= $escaper->escapeHtml(__('Refunds')) ?></span>
+        </div>
+        <div class="paymongo-stat-card" id="paymongo-stat-discrepancies-card">
+            <span class="paymongo-stat-value" id="paymongo-stat-discrepancies">0</span>
+            <span class="paymongo-stat-label"><?= $escaper->escapeHtml(__('Discrepancies')) ?></span>
+        </div>
+    </div>
+
+    <div id="paymongo-reconcile-results" class="paymongo-results" style="display:none;">
+
+        <div class="paymongo-table-card">
+            <div class="paymongo-table-card__header"><?= $escaper->escapeHtml(__('Discrepancies')) ?></div>
+            <div class="paymongo-table-card__body">
+                <p id="paymongo-no-discrepancies" class="paymongo-empty-note" style="display:none;">
+                    <?= $escaper->escapeHtml(__('No discrepancies found for this date range.')) ?>
+                </p>
+                <div class="paymongo-table-scroll">
+                    <table id="paymongo-discrepancies-table" class="paymongo-table" style="display:none;">
+                        <thead>
+                            <tr>
+                                <th><?= $escaper->escapeHtml(__('Type')) ?></th>
+                                <th><?= $escaper->escapeHtml(__('Payment ID')) ?></th>
+                                <th><?= $escaper->escapeHtml(__('Order #')) ?></th>
+                                <th><?= $escaper->escapeHtml(__('Amount — PayMongo / Magento')) ?></th>
+                                <th><?= $escaper->escapeHtml(__('Message')) ?></th>
+                            </tr>
+                        </thead>
+                        <tbody id="paymongo-discrepancies-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="paymongo-table-card">
+            <div class="paymongo-table-card__header"><?= $escaper->escapeHtml(__('PayMongo Payments')) ?></div>
+            <div class="paymongo-table-card__body">
+                <div class="paymongo-table-scroll">
+                    <table class="paymongo-table">
+                        <thead>
+                            <tr>
+                                <th><?= $escaper->escapeHtml(__('ID')) ?></th>
+                                <th><?= $escaper->escapeHtml(__('Status')) ?></th>
+                                <th><?= $escaper->escapeHtml(__('Amount')) ?></th>
+                                <th><?= $escaper->escapeHtml(__('Method')) ?></th>
+                                <th><?= $escaper->escapeHtml(__('Description')) ?></th>
+                                <th><?= $escaper->escapeHtml(__('Created')) ?></th>
+                            </tr>
+                        </thead>
+                        <tbody id="paymongo-payments-body">
+                            <tr><td colspan="6"><?= $escaper->escapeHtml(__('No data yet.')) ?></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="paymongo-table-card">
+            <div class="paymongo-table-card__header"><?= $escaper->escapeHtml(__('PayMongo Refunds')) ?></div>
+            <div class="paymongo-table-card__body">
+                <div class="paymongo-table-scroll">
+                    <table class="paymongo-table">
+                        <thead>
+                            <tr>
+                                <th><?= $escaper->escapeHtml(__('ID')) ?></th>
+                                <th><?= $escaper->escapeHtml(__('Status')) ?></th>
+                                <th><?= $escaper->escapeHtml(__('Amount')) ?></th>
+                                <th><?= $escaper->escapeHtml(__('Payment ID')) ?></th>
+                                <th><?= $escaper->escapeHtml(__('Reason')) ?></th>
+                                <th><?= $escaper->escapeHtml(__('Created')) ?></th>
+                            </tr>
+                        </thead>
+                        <tbody id="paymongo-refunds-body">
+                            <tr><td colspan="6"><?= $escaper->escapeHtml(__('No data yet.')) ?></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+(function () {
+    'use strict';
+
+    var btn         = document.getElementById('paymongo-reconcile-btn');
+    var exportBtn   = document.getElementById('paymongo-export-btn');
+    var spinner     = document.getElementById('paymongo-reconcile-spinner');
+    var errBox      = document.getElementById('paymongo-reconcile-error');
+    var results     = document.getElementById('paymongo-reconcile-results');
+    var stats       = document.getElementById('paymongo-summary-stats');
+    var placeholder = document.getElementById('paymongo-reconcile-placeholder');
+    var dateFromEl  = document.getElementById('paymongo_date_from');
+    var dateToEl    = document.getElementById('paymongo_date_to');
+
+    var DISCREPANCY_SEVERITY = {
+        MISSING_IN_MAGENTO: 'high',
+        REFUND_NOT_IN_ORDER: 'high',
+        INVOICE_MISSING: 'high',
+        NOT_PAID_IN_PAYMONGO: 'high',
+        AMOUNT_MISMATCH: 'medium',
+        STATUS_MISMATCH: 'medium',
+        CHECK_INCOMPLETE: 'medium'
+    };
+
+    // Human-readable labels for the raw discrepancy type strings Model\Reconciliation\Service
+    // returns (see its own docblock for what each one means) — falls back to a generic
+    // title-cased version of the raw type for any future type this map doesn't know about yet.
+    var DISCREPANCY_LABELS = {
+        MISSING_IN_MAGENTO: '<?= $escaper->escapeJs(__('Missing in Magento')) ?>',
+        REFUND_NOT_IN_ORDER: '<?= $escaper->escapeJs(__('Refund Not in Order')) ?>',
+        INVOICE_MISSING: '<?= $escaper->escapeJs(__('Invoice Missing')) ?>',
+        NOT_PAID_IN_PAYMONGO: '<?= $escaper->escapeJs(__('Not Paid in PayMongo')) ?>',
+        AMOUNT_MISMATCH: '<?= $escaper->escapeJs(__('Amount Mismatch')) ?>',
+        STATUS_MISMATCH: '<?= $escaper->escapeJs(__('Status Mismatch')) ?>',
+        CHECK_INCOMPLETE: '<?= $escaper->escapeJs(__('Check Incomplete')) ?>'
+    };
+
+    function discrepancyLabel(type) {
+        if (DISCREPANCY_LABELS[type]) {
+            return DISCREPANCY_LABELS[type];
+        }
+
+        return (type || '').split('_').map(function (word) {
+            return word.charAt(0) + word.slice(1).toLowerCase();
+        }).join(' ');
+    }
+
+    var STATUS_BADGE_LEVEL = {
+        paid: 'success',
+        succeeded: 'success',
+        active: 'success',
+        failed: 'danger',
+        expired: 'danger',
+        cancelled: 'danger',
+        pending: 'neutral',
+        unpaid: 'neutral',
+        awaiting_payment_method: 'neutral'
+    };
+
+    function esc(str) {
+        var d = document.createElement('div');
+        d.appendChild(document.createTextNode(str || ''));
+        return d.innerHTML;
+    }
+
+    function money(amount) {
+        var num = Number(amount || 0);
+        return '₱' + num.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    }
+
+    function badge(text, level) {
+        return '<span class="paymongo-badge paymongo-badge-' + level + '">' + esc(text) + '</span>';
+    }
+
+    function statusBadge(status) {
+        var level = STATUS_BADGE_LEVEL[(status || '').toLowerCase()] || 'neutral';
+        return badge(status, level);
+    }
+
+    function severityBadge(type) {
+        var level = DISCREPANCY_SEVERITY[type] || 'medium';
+        return badge(discrepancyLabel(type), level);
+    }
+
+    // Maps a payment/refund id to its worst discrepancy severity, so the Payments and
+    // Refunds tables can highlight the exact rows the Discrepancies table is about.
+    function buildDiscrepancyMaps(discrepancies) {
+        var payments     = {};
+        var refunds      = {};
+        var severityRank = {high: 2, medium: 1};
+
+        (discrepancies || []).forEach(function (d) {
+            var severity = DISCREPANCY_SEVERITY[d.type] || 'medium';
+
+            if (d.refund_id) {
+                if (!refunds[d.refund_id] || severityRank[severity] > severityRank[refunds[d.refund_id]]) {
+                    refunds[d.refund_id] = severity;
+                }
+            } else if (d.payment_id) {
+                if (!payments[d.payment_id] || severityRank[severity] > severityRank[payments[d.payment_id]]) {
+                    payments[d.payment_id] = severity;
+                }
+            }
+        });
+
+        return {payments: payments, refunds: refunds};
+    }
+
+    function fmtDate(d) {
+        var mm = String(d.getMonth() + 1).padStart(2, '0');
+        var dd = String(d.getDate()).padStart(2, '0');
+        return d.getFullYear() + '-' + mm + '-' + dd;
+    }
+
+    function renderPayments(rows, discrepancyMap) {
+        var tbody = document.getElementById('paymongo-payments-body');
+        if (!rows || rows.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6"><?= $escaper->escapeJs(__('No payments found for this range.')) ?></td></tr>';
+            return;
+        }
+        tbody.innerHTML = rows.map(function (r) {
+            var severity = (discrepancyMap || {})[r.id];
+            var rowClass = severity ? ' class="paymongo-severity-' + severity + '"' : '';
+            return '<tr' + rowClass + '>' +
+                '<td>' + esc(r.id) + '</td>' +
+                '<td>' + statusBadge(r.status) + '</td>' +
+                '<td>' + money(r.amount) + '</td>' +
+                '<td>' + esc(r.method) + '</td>' +
+                '<td>' + esc(r.description) + '</td>' +
+                '<td>' + esc(r.created_at) + '</td>' +
+                '</tr>';
+        }).join('');
+    }
+
+    function renderRefunds(rows, discrepancyMap) {
+        var tbody = document.getElementById('paymongo-refunds-body');
+        if (!rows || rows.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6"><?= $escaper->escapeJs(__('No refunds found for this range.')) ?></td></tr>';
+            return;
+        }
+        tbody.innerHTML = rows.map(function (r) {
+            var severity = (discrepancyMap || {})[r.id];
+            var rowClass = severity ? ' class="paymongo-severity-' + severity + '"' : '';
+            return '<tr' + rowClass + '>' +
+                '<td>' + esc(r.id) + '</td>' +
+                '<td>' + statusBadge(r.status) + '</td>' +
+                '<td>' + money(r.amount) + '</td>' +
+                '<td>' + esc(r.payment_id) + '</td>' +
+                '<td>' + esc(r.reason) + '</td>' +
+                '<td>' + esc(r.created_at) + '</td>' +
+                '</tr>';
+        }).join('');
+    }
+
+    function amountText(d) {
+        if (d.paymongo_amount !== undefined && d.magento_amount !== undefined) {
+            return money(d.paymongo_amount) + ' / ' + money(d.magento_amount);
+        }
+        if (d.amount !== undefined) {
+            return money(d.amount);
+        }
+        return d.magento_amount !== undefined ? money(d.magento_amount) : '';
+    }
+
+    // A payment and its refund can each independently fail to find a matching Magento
+    // order — e.g. checkPayments() flags MISSING_IN_MAGENTO for the payment while
+    // checkRefunds() separately flags REFUND_NOT_IN_ORDER for its refund, both because
+    // the same order is missing. Grouping by payment_id merges those into one row so
+    // it reads as "this payment has 2 issues" instead of 2 unrelated-looking rows that
+    // happen to repeat the same payment ID.
+    function groupDiscrepanciesByPaymentId(rows) {
+        var order = [];
+        var groups = {};
+
+        (rows || []).forEach(function (d) {
+            var key = d.payment_id || d.refund_id || d.order_increment || '';
+            if (!groups[key]) {
+                groups[key] = {
+                    payment_id: d.payment_id || '',
+                    order_increment: d.order_increment || '',
+                    types: [],
+                    amounts: [],
+                    messages: []
+                };
+                order.push(key);
+            }
+
+            var group = groups[key];
+            group.order_increment = group.order_increment || d.order_increment || '';
+            group.types.push(d.type);
+
+            var amount = amountText(d);
+            if (amount && group.amounts.indexOf(amount) === -1) {
+                group.amounts.push(amount);
+            }
+            if (d.message && group.messages.indexOf(d.message) === -1) {
+                group.messages.push(d.message);
+            }
+        });
+
+        return order.map(function (key) { return groups[key]; });
+    }
+
+    function worstSeverity(types) {
+        var rank = {high: 2, medium: 1};
+        var worst = 'medium';
+        types.forEach(function (type) {
+            var severity = DISCREPANCY_SEVERITY[type] || 'medium';
+            if (!worst || rank[severity] > rank[worst]) {
+                worst = severity;
+            }
+        });
+        return worst;
+    }
+
+    function renderDiscrepancies(rows) {
+        var noneMsg = document.getElementById('paymongo-no-discrepancies');
+        var table   = document.getElementById('paymongo-discrepancies-table');
+        var tbody   = document.getElementById('paymongo-discrepancies-body');
+
+        if (!rows || rows.length === 0) {
+            noneMsg.style.display = '';
+            table.style.display   = 'none';
+            return;
+        }
+
+        noneMsg.style.display = 'none';
+        table.style.display   = '';
+        tbody.innerHTML = groupDiscrepanciesByPaymentId(rows).map(function (group) {
+            var rowClass = 'paymongo-severity-' + worstSeverity(group.types);
+            var badges = group.types.map(function (type) {
+                return severityBadge(type);
+            }).join(' ');
+
+            return '<tr class="' + rowClass + '">' +
+                '<td>' + badges + '</td>' +
+                '<td>' + esc(group.payment_id) + '</td>' +
+                '<td>' + esc(group.order_increment) + '</td>' +
+                '<td>' + group.amounts.join(', ') + '</td>' +
+                '<td>' + group.messages.map(esc).join('<br>') + '</td>' +
+                '</tr>';
+        }).join('');
+    }
+
+    function updateStats(data) {
+        var paymentsCount    = (data.payments || []).length;
+        var refundsCount     = (data.refunds || []).length;
+        // Counts distinct affected payments (matching the grouped Discrepancies table
+        // rows), not raw issue count — a payment and its refund can each independently
+        // fail to find an order, and that should read as 1 affected payment, not 2.
+        var discrepancyCount = groupDiscrepanciesByPaymentId(data.discrepancies).length;
+        var discrepancyCard  = document.getElementById('paymongo-stat-discrepancies-card');
+
+        document.getElementById('paymongo-stat-payments').textContent      = paymentsCount;
+        document.getElementById('paymongo-stat-refunds').textContent       = refundsCount;
+        document.getElementById('paymongo-stat-discrepancies').textContent = discrepancyCount;
+
+        discrepancyCard.classList.remove('paymongo-stat-card--alert', 'paymongo-stat-card--ok');
+        discrepancyCard.classList.add(discrepancyCount > 0 ? 'paymongo-stat-card--alert' : 'paymongo-stat-card--ok');
+
+        stats.style.display = '';
+    }
+
+    function setLoading(isLoading) {
+        spinner.style.display = isLoading ? '' : 'none';
+        btn.disabled          = isLoading;
+        exportBtn.disabled    = isLoading;
+    }
+
+    function runReconciliation() {
+        var dateFrom = dateFromEl.value;
+        var dateTo   = dateToEl.value;
+
+        if (!dateFrom || !dateTo) {
+            errBox.textContent   = '<?= $escaper->escapeJs(__('Please select both Date From and Date To.')) ?>';
+            errBox.style.display = '';
+            return;
+        }
+
+        placeholder.style.display = 'none';
+        errBox.style.display      = 'none';
+        results.style.display     = 'none';
+        setLoading(true);
+
+        var formData = new FormData();
+        formData.append('date_from', dateFrom);
+        formData.append('date_to', dateTo);
+        formData.append('form_key', window.FORM_KEY || '');
+
+        fetch('<?= $escaper->escapeJs($fetchUrl) ?>', {
+            method: 'POST',
+            body: formData
+        })
+        .then(function (resp) { return resp.json(); })
+        .then(function (data) {
+            setLoading(false);
+
+            if (data.error) {
+                errBox.textContent   = data.error;
+                errBox.style.display = '';
+                return;
+            }
+
+            var discrepancyMaps = buildDiscrepancyMaps(data.discrepancies);
+            renderPayments(data.payments, discrepancyMaps.payments);
+            renderRefunds(data.refunds, discrepancyMaps.refunds);
+            renderDiscrepancies(data.discrepancies);
+            updateStats(data);
+            results.style.display = '';
+        })
+        .catch(function (err) {
+            setLoading(false);
+            errBox.textContent    = '<?= $escaper->escapeJs(__('Request failed. Check browser console for details.')) ?>';
+            errBox.style.display  = '';
+            console.error('PayMongo reconciliation error:', err);
+        });
+    }
+
+    btn.addEventListener('click', runReconciliation);
+
+    Array.prototype.forEach.call(document.querySelectorAll('.paymongo-preset-btn'), function (presetBtn) {
+        presetBtn.addEventListener('click', function () {
+            var today = new Date();
+            var from  = today;
+            var to    = today;
+
+            switch (presetBtn.getAttribute('data-preset')) {
+                case '7d':
+                    from = new Date(today);
+                    from.setDate(from.getDate() - 6);
+                    break;
+                case '30d':
+                    from = new Date(today);
+                    from.setDate(from.getDate() - 29);
+                    break;
+                case 'month':
+                    from = new Date(today.getFullYear(), today.getMonth(), 1);
+                    break;
+            }
+
+            dateFromEl.value = fmtDate(from);
+            dateToEl.value   = fmtDate(to);
+            runReconciliation();
+        });
+    });
+
+    exportBtn.addEventListener('click', function () {
+        var dateFrom = dateFromEl.value;
+        var dateTo   = dateToEl.value;
+
+        if (!dateFrom || !dateTo) {
+            errBox.textContent   = '<?= $escaper->escapeJs(__('Please select both Date From and Date To.')) ?>';
+            errBox.style.display = '';
+            return;
+        }
+
+        errBox.style.display = 'none';
+
+        var params = new URLSearchParams();
+        params.append('date_from', dateFrom);
+        params.append('date_to', dateTo);
+        params.append('form_key', window.FORM_KEY || '');
+
+        window.location.href = '<?= $escaper->escapeJs($exportUrl) ?>' + '?' + params.toString();
+    });
+}());
+</script>

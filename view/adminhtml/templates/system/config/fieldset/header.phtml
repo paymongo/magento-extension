@@ -1,0 +1,39 @@
+<?php
+/**
+ * @var \PayMongo\Payment\Block\Adminhtml\Render\Header $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+?>
+<div class="paymongo-config-header">
+    <div class="paymongo-config-header__brand left">
+        <img class="paymongo-config-header__logo-img"
+            src="<?= $escaper->escapeUrl($block->getViewFileUrl('PayMongo_Payment::images/devteam-logo-dark.png')) ?>"
+            alt="<?= $escaper->escapeHtmlAttr(__('DevTeam')) ?>" />
+        <div class="paymongo-config-header__links">
+            <a href="https://devteam.com" target="_blank" rel="noopener noreferrer">
+                <svg class="paymongo-config-header__link-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                <?= $escaper->escapeHtml(__('Visit Devteam.com')) ?>
+            </a>
+            <a href="https://support-devteam-paymongo.zendesk.com/hc/en-us" target="_blank" rel="noopener noreferrer">
+                <svg class="paymongo-config-header__link-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path></svg>
+                <?= $escaper->escapeHtml(__('Devteam Support')) ?>
+            </a>
+            <a href="https://www.paymongo.com" target="_blank" rel="noopener noreferrer">
+                <svg class="paymongo-config-header__link-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                <?= $escaper->escapeHtml(__('Visit PayMongo')) ?>
+            </a>
+            <a href="mailto:support@paymongo.com">
+                <svg class="paymongo-config-header__link-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22 6 12 13 2 6"></polyline></svg>
+                <?= $escaper->escapeHtml(__('Contact PayMongo')) ?>
+            </a>
+        </div>
+    </div>
+    <div class="paymongo-config-header__brand right">
+        <img class="paymongo-config-header__logo-img"
+            src="<?= $escaper->escapeUrl($block->getViewFileUrl('PayMongo_Payment::images/paymongo-logo.webp')) ?>"
+            alt="<?= $escaper->escapeHtmlAttr(__('PayMongo')) ?>" />
+        <span class="paymongo-config-header__tagline">
+            <?= $escaper->escapeHtml(__('Hosted checkout payments for the Philippines, by DevTeam.')) ?>
+        </span>
+    </div>
+</div>

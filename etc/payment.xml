@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<payment xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Payment:etc/payment.xsd">
+    <methods>
+        <!-- Legacy generic method — kept for backward compatibility with v1.0 orders -->
+        <method name="paymongo">
+            <allow_multiple_address>0</allow_multiple_address>
+        </method>
+
+        <method name="paymongo_card">
+            <allow_multiple_address>0</allow_multiple_address>
+        </method>
+        <method name="paymongo_gcash">
+            <allow_multiple_address>0</allow_multiple_address>
+        </method>
+        <method name="paymongo_grab_pay">
+            <allow_multiple_address>0</allow_multiple_address>
+        </method>
+        <method name="paymongo_maya">
+            <allow_multiple_address>0</allow_multiple_address>
+        </method>
+        <method name="paymongo_google_pay">
+            <allow_multiple_address>0</allow_multiple_address>
+        </method>
+        <method name="paymongo_shopeepay">
+            <allow_multiple_address>0</allow_multiple_address>
+        </method>
+        <method name="paymongo_billease">
+            <allow_multiple_address>0</allow_multiple_address>
+        </method>
+        <method name="paymongo_bpi_online">
+            <allow_multiple_address>0</allow_multiple_address>
+        </method>
+        <method name="paymongo_unionbank_online">
+            <allow_multiple_address>0</allow_multiple_address>
+        </method>
+        <method name="paymongo_qrph">
+            <allow_multiple_address>0</allow_multiple_address>
+        </method>
+        <!-- Direct Online Banking — retired (PYM-34), kept for orders placed with it -->
+        <method name="paymongo_dob">
+            <allow_multiple_address>0</allow_multiple_address>
+        </method>
+    </methods>
+</payment>

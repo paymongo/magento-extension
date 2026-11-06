@@ -1,0 +1,111 @@
+<!--
+    Knockout JS template for all PayMongo payment methods on Luma / standard checkout.
+
+    Rendered by paymongo-method.js inside Magento's checkout payment step.
+    The template shows only the method title radio button and a brief redirect notice
+    because all payment UI is handled on the PayMongo hosted checkout page.
+
+    PayMongo's Separate-mode individual methods (paymongo_card, paymongo_gcash, etc.) are
+    grouped under one collapsible header shared across all of them (see
+    js/model/paymongo-group-state.js) — only isIndividualMethod() instances are hidden
+    until the group is expanded; the all-in-one "paymongo" method always renders normally.
+
+    The header's label lists what the group holds, e.g. "PayMongo (QRPh, Cards,
+    E-Wallets, Banking, and More)", built from the methods actually registered rather
+    than written out here — see PayMongo\Payment\Model\Checkout\MethodGroupLabel. It is
+    bound with "text", not "i18n": the group names are already translated server-side.
+
+    The header below deliberately reuses the theme's own .payment-method /
+    .payment-method-title / .label classes (the same ones every other payment method row
+    below uses) instead of custom styling, so it looks like a native row regardless of
+    which Luma-based theme is installed, rather than a bespoke box.
+-->
+<!-- ko if: showGroupHeader() -->
+<div class="payment-method">
+    <div class="payment-method-title field choice" style="cursor: pointer;"
+         role="button"
+         tabindex="0"
+         data-bind="click: toggleGroup,
+                    event: { keydown: toggleGroupOnKey },
+                    attr: { 'aria-expanded': isGroupExpanded() ? 'true' : 'false' }">
+        <label class="label" style="cursor: pointer; display: flex; align-items: center; gap: 8px; width: 100%;">
+            <span data-bind="text: getGroupLabel()"></span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                 stroke-linejoin="round" style="margin-left: auto; transition: transform 0.15s ease;"
+                 data-bind="style: { transform: isGroupExpanded() ? 'rotate(180deg)' : 'rotate(0deg)' }">
+                <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+        </label>
+    </div>
+</div>
+<!-- /ko -->
+
+<!-- ko if: !isIndividualMethod() || isGroupExpanded() -->
+<div class="payment-method" data-bind="css: {'_active': (getCode() == isChecked())}">
+    <div class="payment-method-title field choice" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+        <input type="radio"
+               name="payment[method]"
+               class="radio"
+               data-bind="attr: {'id': getCode()}, value: getCode(), checked: isChecked, click: selectPaymentMethod, visible: isRadioButtonVisible()"/>
+        <label data-bind="attr: {'for': getCode()}" class="label">
+            <span data-bind="text: getTitle()"></span>
+        </label>
+
+        <!-- getIconUrl() is checked so a method with no entry in ConfigProvider::ICONS
+             renders nothing, rather than an <img src=""> broken-image box. -->
+        <!-- ko if: iconsEnabled() && !isCardMethod() && !isUnifiedMethod() && getIconUrl() -->
+        <img class="paymongo-icon" style="margin-left: auto;"
+             data-bind="attr: {src: getIconUrl(), alt: getTitle()}"/>
+        <!-- /ko -->
+
+        <!-- ko if: iconsEnabled() && isCardMethod() -->
+        <span class="paymongo-icon-group" style="margin-left: auto;" data-bind="foreach: getCardImages()">
+            <img class="paymongo-icon" data-bind="attr: {src: $data.src, alt: $data.alt}"/>
+        </span>
+        <!-- /ko -->
+
+        <!-- ko if: iconsEnabled() && isUnifiedMethod() && getUnifiedIcons().length -->
+        <span class="paymongo-icon-group" style="margin-left: auto;">
+            <!-- ko foreach: getUnifiedIcons() -->
+            <img class="paymongo-icon" data-bind="attr: {src: $data.src, alt: $data.alt}"/>
+            <!-- /ko -->
+            <!-- ko if: getUnifiedOverflow() > 0 -->
+            <span class="paymongo-icon-badge" data-bind="text: '+' + getUnifiedOverflow()"></span>
+            <!-- /ko -->
+        </span>
+        <!-- /ko -->
+    </div>
+
+    <div class="payment-method-content">
+        <!-- ko foreach: getRegion('messages') -->
+        <!-- ko template: getTemplate() --><!-- /ko -->
+        <!--/ko-->
+
+        <div class="payment-method-billing-address">
+            <!-- ko foreach: $parent.getRegion(getBillingAddressFormName()) -->
+            <!-- ko template: getTemplate() --><!-- /ko -->
+            <!--/ko-->
+        </div>
+
+        <p class="paymongo-redirect-notice" style="margin: 0.5rem 0; color: #555; font-size: 0.9em;">
+            <!-- ko i18n: 'You will be securely redirected to PayMongo to complete your payment.' --><!-- /ko -->
+        </p>
+
+        <div class="actions-toolbar">
+            <div class="primary">
+                <button class="action primary checkout"
+                        type="submit"
+                        data-bind="
+                            click: placeOrder,
+                            attr: {title: $t('Place Order')},
+                            css: {disabled: !isPlaceOrderActionAllowed()},
+                            enable: isPlaceOrderActionAllowed()
+                        ">
+                    <span data-bind="i18n: 'Place Order'"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /ko -->
