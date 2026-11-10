@@ -1,0 +1,652 @@
+.paymongo-config-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-direction: row;
+    gap: 16px;
+    padding: 16px 20px;
+    margin-bottom: 10px;
+    background: #f8f8f8;
+    border: 1px solid #e3e3e3;
+    border-radius: 4px;
+}
+
+.paymongo-config-header__brand {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.paymongo-config-header__brand.left {
+    align-items: flex-start;
+}
+
+.paymongo-config-header__brand.right {
+    align-items: flex-end;
+}
+
+.paymongo-config-header__logo-img {
+    height: auto;
+    width: 180px;
+    flex-shrink: 0;
+}
+
+.paymongo-config-header__tagline {
+    font-size: 12px;
+    color: #666666;
+    text-align: end;
+}
+
+.paymongo-config-header__links {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.paymongo-config-header__links a {
+    display: inline-flex !important;
+    align-items: center;
+    font-size: 12px;
+    color: #514943;
+    text-decoration: underline;
+}
+
+.paymongo-config-header__links a:hover {
+    color: #333333;
+}
+
+.paymongo-config-header__link-icon {
+    flex-shrink: 0;
+    margin-right: 4px;
+}
+
+.admin__page-nav._collapsed.paymongo-tab .title,
+.admin__page-nav._collapsed._show.paymongo-tab .title {
+    background-image: url('../images/paymongo.svg');
+    background-position: 15px center;
+    background-repeat: no-repeat;
+    background-size: auto 50%;
+    text-indent: 35px;
+}
+
+.paymongo-stats-row {
+    display: flex;
+    gap: 16px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+}
+
+.paymongo-stat-card {
+    flex: 1;
+    min-width: 140px;
+    padding: 16px 20px;
+    background: #f8f8f8;
+    border: 1px solid #e3e3e3;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.paymongo-stat-value {
+    display: block;
+    font-size: 28px;
+    font-weight: 700;
+    color: #333333;
+}
+
+.paymongo-stat-label {
+    display: block;
+    font-size: 12px;
+    color: #666666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+}
+
+.paymongo-stat-card--alert {
+    background: #fde2e2;
+    border-color: #e0a0a0;
+}
+
+.paymongo-stat-card--alert .paymongo-stat-value {
+    color: #c0392b;
+}
+
+.paymongo-stat-card--ok {
+    background: #e6f4ea;
+    border-color: #a3d9b1;
+}
+
+.paymongo-stat-card--ok .paymongo-stat-value {
+    color: #2e7d32;
+}
+
+.paymongo-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.paymongo-badge-success {
+    background: #e6f4ea;
+    color: #2e7d32;
+}
+
+.paymongo-badge-danger {
+    background: #fde2e2;
+    color: #c0392b;
+}
+
+.paymongo-badge-neutral {
+    background: #eeeeee;
+    color: #555555;
+}
+
+.paymongo-badge-high {
+    background: #c0392b;
+    color: #ffffff;
+}
+
+.paymongo-badge-medium {
+    background: #e6a23c;
+    color: #ffffff;
+}
+
+/*
+    Live-approval badge that account_capabilities.phtml appends to each method's name in
+    the methods table — inside the <span id="..._<group>-head"> that PaymentMethodRow
+    renders in the Method cell. cursor: help advertises the title tooltip, which for a
+    method Paymongo has not activated yet is the only place the page says what the
+    merchant has to do next (submit the method's documentation in the Paymongo Dashboard).
+*/
+
+.paymongo-capability-badge {
+    margin-left: 8px;
+    vertical-align: middle;
+    cursor: help;
+}
+
+.paymongo-spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid #cccccc;
+    border-top-color: #514943;
+    border-radius: 50%;
+    animation: paymongo-spin 0.6s linear infinite;
+    vertical-align: middle;
+    margin-right: 6px;
+}
+
+@keyframes paymongo-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Toolbar: date range + quick-range presets + primary actions */
+
+.paymongo-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 20px;
+    background: #f8f8f8;
+    border: 1px solid #e3e3e3;
+    border-radius: 4px;
+    padding: 16px 20px;
+    margin: 16px 0;
+}
+
+.paymongo-toolbar__filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 20px;
+}
+
+.paymongo-toolbar__group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.paymongo-toolbar__label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #666666;
+}
+
+.paymongo-toolbar__actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.paymongo-toolbar__spinner {
+    font-size: 12px;
+    color: #666666;
+    display: inline-flex;
+    align-items: center;
+}
+
+/* Quick-range segmented button group */
+
+.paymongo-preset-group {
+    display: inline-flex;
+}
+
+.paymongo-preset-btn {
+    background: #ffffff;
+    border: 1px solid #cccccc;
+    padding: 7px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    margin-left: -1px;
+}
+
+.paymongo-preset-btn:first-child {
+    margin-left: 0;
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px;
+}
+
+.paymongo-preset-btn:last-child {
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+}
+
+.paymongo-preset-btn:hover {
+    background: #f0f0f0;
+    position: relative;
+    z-index: 1;
+}
+
+/* Buttons */
+
+.paymongo-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 9px 18px;
+    border-radius: 3px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.2;
+    cursor: pointer;
+    border: 1px solid transparent;
+    text-decoration: none;
+}
+
+/*
+ * .paymongo-btn is also used on <a> tags (e.g. the "Go to PayMongo Configuration"
+ * link on the stock Payment Methods page) — these override Magento admin's default
+ * anchor color/underline on hover/visited/focus/active, since a plain :hover rule
+ * on the modifier classes alone isn't specific enough to win against them.
+ */
+.paymongo-btn--primary,
+.paymongo-btn--primary:visited {
+    background: #eb5202;
+    border-color: #eb5202;
+    color: #ffffff;
+}
+
+.paymongo-btn--primary:hover:not(:disabled),
+.paymongo-btn--primary:focus:not(:disabled),
+.paymongo-btn--primary:active:not(:disabled) {
+    background: #cf4a00;
+    border-color: #cf4a00;
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.paymongo-btn--secondary,
+.paymongo-btn--secondary:visited {
+    background: #ffffff;
+    border-color: #cccccc;
+    color: #333333;
+}
+
+.paymongo-btn--secondary:hover:not(:disabled),
+.paymongo-btn--secondary:focus:not(:disabled),
+.paymongo-btn--secondary:active:not(:disabled) {
+    background: #f0f0f0;
+    color: #333333;
+    text-decoration: none;
+}
+
+.paymongo-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Result tables */
+
+.paymongo-results {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-top: 20px;
+}
+
+.paymongo-table-card {
+    background: #ffffff;
+    border: 1px solid #e3e3e3;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.paymongo-table-card__header {
+    padding: 12px 16px;
+    background: #f8f8f8;
+    border-bottom: 1px solid #e3e3e3;
+    font-weight: 600;
+    font-size: 13px;
+    color: #333333;
+}
+
+.paymongo-empty-note {
+    padding: 16px;
+    margin: 0;
+    color: #2e7d32;
+}
+
+.paymongo-table-scroll {
+    overflow-x: auto;
+}
+
+.paymongo-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.paymongo-table thead th {
+    background: #fafafa;
+    text-align: left;
+    padding: 10px 16px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #666666;
+    border-bottom: 1px solid #e3e3e3;
+    white-space: nowrap;
+}
+
+.paymongo-table tbody td {
+    padding: 10px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    color: #333333;
+}
+
+.paymongo-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.paymongo-table tbody tr:nth-child(even) {
+    background: #fafafa;
+}
+
+.paymongo-table tbody tr:hover {
+    background: #f0f4f8;
+}
+
+.paymongo-table tbody tr.paymongo-severity-high {
+    background: #fde2e2 !important;
+}
+
+.paymongo-table tbody tr.paymongo-severity-medium {
+    background: #fff3cd !important;
+}
+
+.paymongo-table tbody tr.paymongo-severity-high:hover {
+    background: #f8c9c9 !important;
+}
+
+.paymongo-table tbody tr.paymongo-severity-medium:hover {
+    background: #ffe9a8 !important;
+}
+
+/* Payment Methods flat table (replaces one-accordion-per-method layout) */
+
+.paymongo-methods-table-wrap {
+    overflow-x: auto;
+    margin: 10px 0 20px;
+}
+
+.paymongo-methods-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #ffffff;
+    border: 1px solid #e3e3e3;
+    border-radius: 4px;
+}
+
+.paymongo-methods-table thead th {
+    background: #fafafa;
+    text-align: left;
+    padding: 10px 12px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #666666;
+    border-bottom: 1px solid #e3e3e3;
+    white-space: nowrap;
+}
+
+.paymongo-methods-table tbody td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+}
+
+.paymongo-methods-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.paymongo-methods-table tbody tr:hover {
+    background: #f8f8f8;
+}
+
+.paymongo-method-row__icon-cell {
+    width: 1%;
+    white-space: nowrap;
+}
+
+/*
+    Magento's admin base sheet sets `img, video, embed, object { max-width: 100% }`.
+    With Title claiming every spare pixel (width: 100% further down), the auto table
+    layout squeezes this column toward zero, and that percentage cap then resolves
+    against the crushed cell rather than the declared size — the logos rendered 8px
+    wide whatever width was set here. Capping at none keeps the declared size
+    authoritative, and width: 1% + nowrap above lets the column take its real content
+    width back.
+*/
+
+.paymongo-method-row__icon {
+    width: 40px;
+    height: 28px;
+    max-width: none;
+    object-fit: contain;
+    margin-right: 4px;
+    vertical-align: middle;
+}
+
+.paymongo-method-row__name-cell {
+    font-weight: 600;
+    color: #333333;
+    white-space: nowrap;
+}
+
+.paymongo-method-row__action-cell {
+    color: #999999;
+    white-space: nowrap;
+}
+
+/*
+    Title takes the row's spare horizontal space (method titles are long — "Credit /
+    Debit Card (via PayMongo)" is the default), while Sort Order only ever holds a
+    one or two digit number, so it is squeezed down to a numeric-width field instead
+    of sharing Title's 160px.
+*/
+
+.paymongo-method-row__title-cell {
+    width: 100%;
+}
+
+.paymongo-method-row__sort-order-cell {
+    width: 1%;
+    white-space: nowrap;
+}
+
+.paymongo-method-cell {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.paymongo-method-cell select,
+.paymongo-method-cell input[type="text"] {
+    max-width: 160px;
+}
+
+.paymongo-method-row__title-cell .paymongo-method-cell {
+    display: flex;
+}
+
+.paymongo-method-row__title-cell .paymongo-method-cell__value {
+    flex: 1;
+    min-width: 200px;
+}
+
+.paymongo-method-row__title-cell input[type="text"] {
+    width: 100%;
+    max-width: none;
+}
+
+.paymongo-method-row__sort-order-cell input[type="text"] {
+    width: 56px;
+    max-width: 56px;
+    text-align: center;
+}
+
+/*
+    Payment Action opts out of the shared 160px cap so its label is never clipped.
+    Affordable only because the option labels are short — see
+    Model\Config\Source\PaymentAction, which moved the "(charge immediately)" style
+    parentheticals into the field's comment hint precisely so this column could size to
+    its content without pushing the table into a horizontal scroll.
+*/
+
+.paymongo-method-row__action-cell select {
+    max-width: none;
+}
+
+/*
+    Cell contents stay on one line (.paymongo-method-cell above carries no flex-wrap, so
+    it defaults to nowrap): the comment hint belongs beside the Payment Action select,
+    not under it, where a lone warning glyph reads as a validation error on the field.
+
+    The cost is width — roughly 20px for the hint, plus whatever the "Use Website"
+    inherit checkboxes need once they sit beside their inputs at website and store scope
+    instead of below them. Title is the only column that flexes and it bottoms out at
+    200px, so past that the wrapper in .paymongo-methods-table-wrap scrolls horizontally.
+    That is the accepted trade: readable rows, with a scrollbar on narrow admin windows.
+*/
+
+/*
+    All-in-One Checkout hands the whole payment step to PayMongo's hosted page, so
+    Title, Sort Order and Payment Action have nothing to act on there. Their <td>s are
+    already emptied by each field's <depends> in etc/adminhtml/system.xml, but that
+    leaves three labelled-but-blank columns behind — the header <th>s aren't fields, so
+    no <depends> reaches them. js/payment-action-mode.js toggles this class on the
+    table to drop the columns whole, headers included.
+*/
+
+.paymongo-methods-table--unified .paymongo-method-row__title-cell,
+.paymongo-methods-table--unified .paymongo-method-row__sort-order-cell,
+.paymongo-methods-table--unified .paymongo-method-row__action-cell {
+    display: none;
+}
+
+/*
+    Set by Block\Adminhtml\Render\PaymentMethodsTable at store scope, where Payment
+    Action is not editable and every cell in the column would render an em dash.
+*/
+
+.paymongo-methods-table--no-action .paymongo-method-row__action-cell {
+    display: none;
+}
+
+.paymongo-method-cell__inherit {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: #666666;
+    white-space: nowrap;
+}
+
+.paymongo-method-cell__hint {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff3cd;
+    color: #8a6d00;
+    font-size: 11px;
+    cursor: help;
+    flex-shrink: 0;
+}
+
+/* "PayMongo Account Status" intro card — matches .paymongo-config-header's box style */
+
+.paymongo-info-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    background: #f8f8f8;
+    border: 1px solid #e3e3e3;
+    border-radius: 4px;
+}
+
+.paymongo-info-card__text {
+    flex: 1;
+    min-width: 240px;
+}
+
+.paymongo-info-card__note {
+    margin: 0;
+    font-size: 13px;
+    color: #514943;
+    line-height: 1.5;
+}
+
+.paymongo-info-card__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+/* Redirect notice on the stock Sales > Payment Methods page */
+
+.paymongo-redirect-notice__logo {
+    display: block;
+    width: 140px;
+    height: auto;
+    margin-bottom: 10px;
+}

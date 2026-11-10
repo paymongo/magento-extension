@@ -1,0 +1,159 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <payment>
+            <!--
+                Shared credentials and behaviour — configured once, used by all PayMongo methods.
+                Individual methods below inherit these keys via PaymongoClient.
+            -->
+            <paymongo>
+                <active>0</active>
+                <enabled>0</enabled>
+                <model>PayMongo\Payment\Model\PaymongoPayment</model>
+                <title>PayMongo</title>
+                <order_status>pending</order_status>
+                <!--
+                    PayMongo is a Philippine payment processor and its methods only settle
+                    in PHP, so the module ships restricted to the Philippines rather than
+                    offering itself to every country and failing at the gateway.
+
+                    These two are the only country settings that matter. Every individual
+                    method below keeps Magento's stock <allowspecific>0</allowspecific>,
+                    but those values are inert: the admin exposes no per-method country
+                    field, and Model\Method\AbstractPaymongoMethod::canUseForCountry()
+                    overrides the per-method lookup to read these shared values instead.
+                -->
+                <allowspecific>1</allowspecific>
+                <specificcountry>PH</specificcountry>
+                <payment_action>authorize_capture</payment_action>
+                <display_mode>separate</display_mode>
+                <show_icons>1</show_icons>
+            </paymongo>
+
+            <!-- Credit / Debit Cards -->
+            <paymongo_card>
+                <active>0</active>
+                <model>PayMongo\Payment\Model\Method\Card</model>
+                <title>Credit / Debit Card (via PayMongo)</title>
+                <order_status>pending</order_status>
+                <allowspecific>0</allowspecific>
+                <sort_order>2</sort_order>
+                <payment_action>authorize_capture</payment_action>
+            </paymongo_card>
+
+            <!-- GCash -->
+            <paymongo_gcash>
+                <active>0</active>
+                <model>PayMongo\Payment\Model\Method\Gcash</model>
+                <payment_action>authorize_capture</payment_action>
+                <title>GCash (via PayMongo)</title>
+                <order_status>pending</order_status>
+                <allowspecific>0</allowspecific>
+                <sort_order>3</sort_order>
+            </paymongo_gcash>
+
+            <!-- GrabPay -->
+            <paymongo_grab_pay>
+                <active>0</active>
+                <model>PayMongo\Payment\Model\Method\GrabPay</model>
+                <payment_action>authorize_capture</payment_action>
+                <title>GrabPay (via PayMongo)</title>
+                <order_status>pending</order_status>
+                <allowspecific>0</allowspecific>
+                <sort_order>4</sort_order>
+            </paymongo_grab_pay>
+
+            <!-- Maya -->
+            <paymongo_maya>
+                <active>0</active>
+                <model>PayMongo\Payment\Model\Method\Maya</model>
+                <payment_action>authorize_capture</payment_action>
+                <title>Maya (via PayMongo)</title>
+                <order_status>pending</order_status>
+                <allowspecific>0</allowspecific>
+                <sort_order>5</sort_order>
+            </paymongo_maya>
+
+            <!-- Google Pay -->
+            <paymongo_google_pay>
+                <active>0</active>
+                <model>PayMongo\Payment\Model\Method\GooglePay</model>
+                <payment_action>authorize_capture</payment_action>
+                <title>Google Pay (via PayMongo)</title>
+                <order_status>pending</order_status>
+                <allowspecific>0</allowspecific>
+                <sort_order>6</sort_order>
+            </paymongo_google_pay>
+
+            <!-- ShopeePay -->
+            <paymongo_shopeepay>
+                <active>0</active>
+                <model>PayMongo\Payment\Model\Method\ShopeePay</model>
+                <payment_action>authorize_capture</payment_action>
+                <title>ShopeePay (via PayMongo)</title>
+                <order_status>pending</order_status>
+                <allowspecific>0</allowspecific>
+                <sort_order>7</sort_order>
+            </paymongo_shopeepay>
+
+            <!-- BillEase -->
+            <paymongo_billease>
+                <active>0</active>
+                <model>PayMongo\Payment\Model\Method\BillEase</model>
+                <payment_action>authorize_capture</payment_action>
+                <title>BillEase (via PayMongo)</title>
+                <order_status>pending</order_status>
+                <allowspecific>0</allowspecific>
+                <sort_order>8</sort_order>
+            </paymongo_billease>
+
+            <!-- BPI Online Banking -->
+            <paymongo_bpi_online>
+                <active>0</active>
+                <model>PayMongo\Payment\Model\Method\BpiOnline</model>
+                <payment_action>authorize_capture</payment_action>
+                <title>BPI Online Banking (via PayMongo)</title>
+                <order_status>pending</order_status>
+                <allowspecific>0</allowspecific>
+                <sort_order>9</sort_order>
+            </paymongo_bpi_online>
+
+            <!-- UnionBank Online Banking -->
+            <paymongo_unionbank_online>
+                <active>0</active>
+                <model>PayMongo\Payment\Model\Method\UnionBankOnline</model>
+                <payment_action>authorize_capture</payment_action>
+                <title>UnionBank Online Banking (via PayMongo)</title>
+                <order_status>pending</order_status>
+                <allowspecific>0</allowspecific>
+                <sort_order>10</sort_order>
+            </paymongo_unionbank_online>
+
+            <!-- QR Ph -->
+            <paymongo_qrph>
+                <active>0</active>
+                <model>PayMongo\Payment\Model\Method\QrPh</model>
+                <payment_action>authorize_capture</payment_action>
+                <title>QR Ph (via PayMongo)</title>
+                <order_status>pending</order_status>
+                <allowspecific>0</allowspecific>
+                <sort_order>1</sort_order>
+            </paymongo_qrph>
+
+            <!--
+                Direct Online Banking — retired (PYM-34). Kept so orders placed with it
+                still open; Model\Method\Dob is never active, and it has no admin fields.
+            -->
+            <paymongo_dob>
+                <active>0</active>
+                <model>PayMongo\Payment\Model\Method\Dob</model>
+                <payment_action>authorize_capture</payment_action>
+                <title>Direct Online Banking (via PayMongo)</title>
+                <order_status>pending</order_status>
+                <allowspecific>0</allowspecific>
+                <sort_order>11</sort_order>
+            </paymongo_dob>
+        </payment>
+    </default>
+</config>

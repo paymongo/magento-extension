@@ -1,0 +1,586 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="paymongo" translate="label" sortOrder="200" class="paymongo-tab">
+            <label>PayMongo</label>
+        </tab>
+
+        <section id="paymongo_general" translate="label" type="text" sortOrder="10"
+                 showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>General</label>
+            <tab>paymongo</tab>
+            <resource>PayMongo_Payment::config</resource>
+
+            <group id="branding" translate="label" type="text" sortOrder="0"
+                   showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Branding</label>
+                <frontend_model>PayMongo\Payment\Block\Adminhtml\Render\Header</frontend_model>
+            </group>
+
+            <!--
+                Master switch — gates every PayMongo method (individual and all-in-one)
+                regardless of display mode. The display mode selector itself now lives in
+                the Payment Methods section, right above the methods it governs.
+            -->
+            <group id="general_settings" translate="label" type="text" sortOrder="5"
+                   showInDefault="1" showInWebsite="1" showInStore="0">
+                <label>General Settings</label>
+
+                <field id="enabled" translate="label comment" type="select" sortOrder="5"
+                       showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Enable PayMongo</label>
+                    <comment><![CDATA[Master switch for the whole module. When set to <strong>No</strong>, no PayMongo payment option appears at checkout — individual or all-in-one.]]></comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <config_path>payment/paymongo/enabled</config_path>
+                </field>
+            </group>
+
+            <!--
+                Shared credentials — secret/public key and webhook secret are entered
+                once here and used by every individual PayMongo payment method below.
+            -->
+            <group id="shared_credentials" translate="label" type="text" sortOrder="10"
+                   showInDefault="1" showInWebsite="1" showInStore="0">
+                <label>Shared Credentials</label>
+                <attribute type="expanded">1</attribute>
+
+                <!--
+                    Website-overridable, but deliberately not store-overridable: one set of
+                    PayMongo credentials per website is the intended granularity, and a
+                    store view splitting off its own environment or keys is far more often a
+                    mistake than an intent. Overriding per website remains safe because
+                    Controller\Payment\Webhook resolves which scope's webhook secret and
+                    environment to check via resolveStoreIdFromBody() (a read-only peek at
+                    the payload's order reference before the signature is verified), so a
+                    website with its own override is checked correctly instead of always
+                    falling back to default scope. Same reasoning applies to
+                    sandbox_webhook_secret/production_webhook_secret below.
+                -->
+                <field id="environment" translate="label comment" type="select" sortOrder="15"
+                       showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Environment</label>
+                    <comment><![CDATA[Determines which credential set below (Sandbox or Production) is actually used at checkout, for webhooks, and for every PayMongo API call. Switching this does not delete the other set's values — you can flip back and forth freely.]]></comment>
+                    <source_model>PayMongo\Payment\Model\Config\Source\Environment</source_model>
+                    <config_path>payment/paymongo/environment</config_path>
+                </field>
+
+                <field id="sandbox_secret_key" translate="label" type="obscure" sortOrder="20"
+                       showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Sandbox Secret Key</label>
+                    <comment>Your PayMongo test-mode secret key (sk_test_…).</comment>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                    <config_path>payment/paymongo/sandbox_secret_key</config_path>
+                    <depends>
+                        <field id="paymongo_general/shared_credentials/environment">sandbox</field>
+                    </depends>
+                </field>
+
+                <field id="sandbox_public_key" translate="label" type="obscure" sortOrder="30"
+                       showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Sandbox Public Key</label>
+                    <comment>Your PayMongo test-mode public key (pk_test_…).</comment>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                    <config_path>payment/paymongo/sandbox_public_key</config_path>
+                    <depends>
+                        <field id="paymongo_general/shared_credentials/environment">sandbox</field>
+                    </depends>
+                </field>
+
+                <field id="sandbox_webhook_secret" translate="label" type="obscure" sortOrder="40"
+                       showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Sandbox Webhook Secret</label>
+                    <comment><![CDATA[Copy the signing secret for your test-mode webhook endpoint from PayMongo Dashboard (test mode) → Developers → Webhooks. A test-mode and a live-mode webhook are separate resources with separate secrets — this must be the test-mode one.]]></comment>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                    <config_path>payment/paymongo/sandbox_webhook_secret</config_path>
+                    <depends>
+                        <field id="paymongo_general/shared_credentials/environment">sandbox</field>
+                    </depends>
+                </field>
+
+                <field id="production_secret_key" translate="label" type="obscure" sortOrder="21"
+                       showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Production Secret Key</label>
+                    <comment>Your PayMongo live-mode secret key (sk_live_…).</comment>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                    <config_path>payment/paymongo/production_secret_key</config_path>
+                    <depends>
+                        <field id="paymongo_general/shared_credentials/environment">production</field>
+                    </depends>
+                </field>
+
+                <field id="production_public_key" translate="label" type="obscure" sortOrder="31"
+                       showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Production Public Key</label>
+                    <comment>Your PayMongo live-mode public key (pk_live_…).</comment>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                    <config_path>payment/paymongo/production_public_key</config_path>
+                    <depends>
+                        <field id="paymongo_general/shared_credentials/environment">production</field>
+                    </depends>
+                </field>
+
+                <field id="production_webhook_secret" translate="label" type="obscure" sortOrder="41"
+                       showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Production Webhook Secret</label>
+                    <comment><![CDATA[Copy the signing secret for your live-mode webhook endpoint from PayMongo Dashboard (live mode) → Developers → Webhooks. A test-mode and a live-mode webhook are separate resources with separate secrets — this must be the live-mode one.]]></comment>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                    <config_path>payment/paymongo/production_webhook_secret</config_path>
+                    <depends>
+                        <field id="paymongo_general/shared_credentials/environment">production</field>
+                    </depends>
+                </field>
+
+                <field id="order_status" translate="label" type="select" sortOrder="50"
+                       showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>New Order Status</label>
+                    <source_model>Magento\Sales\Model\Config\Source\Order\Status\NewStatus</source_model>
+                    <config_path>payment/paymongo/order_status</config_path>
+                </field>
+
+                <field id="allowspecific" translate="label" type="allowspecific" sortOrder="60"
+                       showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Payment from Applicable Countries</label>
+                    <source_model>Magento\Payment\Model\Config\Source\Allspecificcountries</source_model>
+                    <config_path>payment/paymongo/allowspecific</config_path>
+                </field>
+
+                <field id="specificcountry" translate="label" type="multiselect" sortOrder="70"
+                       showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Payment from Specific Countries</label>
+                    <source_model>Magento\Directory\Model\Config\Source\Country</source_model>
+                    <config_path>payment/paymongo/specificcountry</config_path>
+                    <can_be_empty>1</can_be_empty>
+                </field>
+            </group>
+        </section>
+
+        <section id="paymongo_payment_methods" translate="label" type="text" sortOrder="20"
+                 showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Payment Methods</label>
+            <tab>paymongo</tab>
+            <resource>PayMongo_Payment::config</resource>
+            <!--
+                Renders every group below tagged with PaymentMethodRow's frontend_model
+                (qrph, card, gcash, ... unionbank_online) as one flat table instead of
+                Magento's default one-collapsible-fieldset-per-method layout — see
+                Block\Adminhtml\Render\PaymentMethodsTable, which wraps the contiguous
+                run of <tr class="paymongo-method-row"> markup those groups produce in a
+                single <table>. The "Checkout Display" and "PayMongo Account Status"
+                groups above the table are unaffected, since they don't use that
+                frontend_model.
+            -->
+            <frontend_model>PayMongo\Payment\Block\Adminhtml\Render\PaymentMethodsTable</frontend_model>
+
+            <group id="info" translate="label" type="text" sortOrder="0"
+                   showInDefault="1" showInWebsite="1" showInStore="0">
+                <label>Checkout Display</label>
+                <attribute type="expanded">1</attribute>
+
+                <field id="display_mode" translate="label comment" type="select" sortOrder="10"
+                       showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Payment Display Mode</label>
+                    <comment><![CDATA[<strong>Separate Payment Methods</strong>: each enabled method below appears individually at checkout, using its own Title and Sort Order.<br><strong>All-in-One Checkout</strong>: customers see a single "PayMongo" option instead, listing every enabled method together on one hosted page — Title, Sort Order and Payment Action are hidden below since they only apply in Separate mode, but <strong>Enabled</strong> still decides which methods are included.]]></comment>
+                    <source_model>PayMongo\Payment\Model\Config\Source\PaymentDisplayMode</source_model>
+                    <backend_model>PayMongo\Payment\Model\Config\Backend\DisplayMode</backend_model>
+                    <config_path>payment/paymongo/display_mode</config_path>
+                </field>
+
+                <field id="show_icons" translate="label comment" type="select" sortOrder="20"
+                       showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Show Payment Method Icons</label>
+                    <comment><![CDATA[Show an icon next to each PayMongo method at checkout (Hyv&auml; Checkout and Luma). Applies in both Separate and All-in-One display modes.]]></comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <config_path>payment/paymongo/show_icons</config_path>
+                </field>
+            </group>
+
+            <group id="account_status" translate="label" type="text" sortOrder="5"
+                   showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>PayMongo Account Status</label>
+                <attribute type="expanded">1</attribute>
+                <frontend_model>PayMongo\Payment\Block\Adminhtml\Render\AccountCapabilities</frontend_model>
+            </group>
+
+            <!-- QR Ph -->
+            <group id="qrph" translate="label" type="text" sortOrder="10"
+                   showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>QR Ph</label>
+                <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\PaymentMethodRow</frontend_model>
+                <field id="active" translate="label" type="select" sortOrder="10"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enabled</label>
+                    <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\Field\BareInput</frontend_model>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <config_path>payment/paymongo_qrph/active</config_path>
+                </field>
+                <field id="title" translate="label" type="text" sortOrder="20"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Title</label>
+                    <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\Field\BareInput</frontend_model>
+                    <config_path>payment/paymongo_qrph/title</config_path>
+                    <depends>
+                        <field id="paymongo_payment_methods/info/display_mode">separate</field>
+                    </depends>
+                </field>
+                <field id="sort_order" translate="label" type="text" sortOrder="30"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Sort Order</label>
+                    <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\Field\BareInput</frontend_model>
+                    <frontend_class>validate-number</frontend_class>
+                    <config_path>payment/paymongo_qrph/sort_order</config_path>
+                    <depends>
+                        <field id="paymongo_payment_methods/info/display_mode">separate</field>
+                    </depends>
+                </field>
+            </group>
+
+            <!-- Credit / Debit Cards -->
+            <group id="card" translate="label" type="text" sortOrder="20"
+                   showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Credit / Debit Card</label>
+                <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\PaymentMethodRow</frontend_model>
+                <field id="active" translate="label" type="select" sortOrder="10"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enabled</label>
+                    <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\Field\BareInput</frontend_model>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <config_path>payment/paymongo_card/active</config_path>
+                </field>
+                <field id="title" translate="label" type="text" sortOrder="20"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Title</label>
+                    <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\Field\BareInput</frontend_model>
+                    <config_path>payment/paymongo_card/title</config_path>
+                    <depends>
+                        <field id="paymongo_payment_methods/info/display_mode">separate</field>
+                    </depends>
+                </field>
+                <field id="payment_action" translate="label" type="select" sortOrder="25"
+                       showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Payment Action</label>
+                    <!--
+                        Deliberately not CDATA, unlike the comments above: BareInput puts
+                        this text in a title attribute, and CDATA would keep "&amp;" as
+                        five literal characters for the escaper to escape again, so the
+                        tooltip would read "Authorize &amp;amp; Capture". Outside CDATA the
+                        XML parser resolves the entity first and the tooltip reads "&".
+                        Keep this comment plain text — markup would need CDATA and would
+                        show up as tag soup in the tooltip anyway.
+                    -->
+                    <comment>Authorize &amp; Capture charges the card as soon as the order is placed. Authorize Only holds the amount and charges it when you create the shipment — use it for high-value orders you want to verify first. Cards only; every other PayMongo method always charges immediately.</comment>
+                    <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\Field\BareInput</frontend_model>
+                    <source_model>PayMongo\Payment\Model\Config\Source\PaymentAction</source_model>
+                    <config_path>payment/paymongo_card/payment_action</config_path>
+                    <depends>
+                        <field id="paymongo_payment_methods/info/display_mode">separate</field>
+                    </depends>
+                </field>
+                <field id="sort_order" translate="label" type="text" sortOrder="30"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Sort Order</label>
+                    <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\Field\BareInput</frontend_model>
+                    <frontend_class>validate-number</frontend_class>
+                    <config_path>payment/paymongo_card/sort_order</config_path>
+                    <depends>
+                        <field id="paymongo_payment_methods/info/display_mode">separate</field>
+                    </depends>
+                </field>
+            </group>
+
+            <!-- GCash -->
+            <group id="gcash" translate="label" type="text" sortOrder="30"
+                   showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>GCash</label>
+                <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\PaymentMethodRow</frontend_model>
+                <field id="active" translate="label" type="select" sortOrder="10"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enabled</label>
+                    <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\Field\BareInput</frontend_model>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <config_path>payment/paymongo_gcash/active</config_path>
+                </field>
+                <field id="title" translate="label" type="text" sortOrder="20"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Title</label>
+                    <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\Field\BareInput</frontend_model>
+                    <config_path>payment/paymongo_gcash/title</config_path>
+                    <depends>
+                        <field id="paymongo_payment_methods/info/display_mode">separate</field>
+                    </depends>
+                </field>
+                <field id="sort_order" translate="label" type="text" sortOrder="30"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Sort Order</label>
+                    <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\Field\BareInput</frontend_model>
+                    <frontend_class>validate-number</frontend_class>
+                    <config_path>payment/paymongo_gcash/sort_order</config_path>
+                    <depends>
+                        <field id="paymongo_payment_methods/info/display_mode">separate</field>
+                    </depends>
+                </field>
+            </group>
+
+            <!-- GrabPay -->
+            <group id="grab_pay" translate="label" type="text" sortOrder="40"
+                   showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>GrabPay</label>
+                <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\PaymentMethodRow</frontend_model>
+                <field id="active" translate="label" type="select" sortOrder="10"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enabled</label>
+                    <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\Field\BareInput</frontend_model>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <config_path>payment/paymongo_grab_pay/active</config_path>
+                </field>
+                <field id="title" translate="label" type="text" sortOrder="20"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Title</label>
+                    <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\Field\BareInput</frontend_model>
+                    <config_path>payment/paymongo_grab_pay/title</config_path>
+                    <depends>
+                        <field id="paymongo_payment_methods/info/display_mode">separate</field>
+                    </depends>
+                </field>
+                <field id="sort_order" translate="label" type="text" sortOrder="30"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Sort Order</label>
+                    <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\Field\BareInput</frontend_model>
+                    <frontend_class>validate-number</frontend_class>
+                    <config_path>payment/paymongo_grab_pay/sort_order</config_path>
+                    <depends>
+                        <field id="paymongo_payment_methods/info/display_mode">separate</field>
+                    </depends>
+                </field>
+            </group>
+
+            <!-- Maya -->
+            <group id="maya" translate="label" type="text" sortOrder="50"
+                   showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Maya</label>
+                <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\PaymentMethodRow</frontend_model>
+                <field id="active" translate="label" type="select" sortOrder="10"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enabled</label>
+                    <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\Field\BareInput</frontend_model>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <config_path>payment/paymongo_maya/active</config_path>
+                </field>
+                <field id="title" translate="label" type="text" sortOrder="20"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Title</label>
+                    <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\Field\BareInput</frontend_model>
+                    <config_path>payment/paymongo_maya/title</config_path>
+                    <depends>
+                        <field id="paymongo_payment_methods/info/display_mode">separate</field>
+                    </depends>
+                </field>
+                <field id="sort_order" translate="label" type="text" sortOrder="30"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Sort Order</label>
+                    <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\Field\BareInput</frontend_model>
+                    <frontend_class>validate-number</frontend_class>
+                    <config_path>payment/paymongo_maya/sort_order</config_path>
+                    <depends>
+                        <field id="paymongo_payment_methods/info/display_mode">separate</field>
+                    </depends>
+                </field>
+            </group>
+
+            <!-- Google Pay -->
+            <group id="google_pay" translate="label" type="text" sortOrder="60"
+                   showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Google Pay</label>
+                <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\PaymentMethodRow</frontend_model>
+                <field id="active" translate="label" type="select" sortOrder="10"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enabled</label>
+                    <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\Field\BareInput</frontend_model>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <config_path>payment/paymongo_google_pay/active</config_path>
+                </field>
+                <field id="title" translate="label" type="text" sortOrder="20"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Title</label>
+                    <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\Field\BareInput</frontend_model>
+                    <config_path>payment/paymongo_google_pay/title</config_path>
+                    <depends>
+                        <field id="paymongo_payment_methods/info/display_mode">separate</field>
+                    </depends>
+                </field>
+                <field id="sort_order" translate="label" type="text" sortOrder="30"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Sort Order</label>
+                    <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\Field\BareInput</frontend_model>
+                    <frontend_class>validate-number</frontend_class>
+                    <config_path>payment/paymongo_google_pay/sort_order</config_path>
+                    <depends>
+                        <field id="paymongo_payment_methods/info/display_mode">separate</field>
+                    </depends>
+                </field>
+            </group>
+
+            <!-- ShopeePay -->
+            <group id="shopeepay" translate="label" type="text" sortOrder="70"
+                   showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>ShopeePay</label>
+                <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\PaymentMethodRow</frontend_model>
+                <field id="active" translate="label" type="select" sortOrder="10"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enabled</label>
+                    <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\Field\BareInput</frontend_model>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <config_path>payment/paymongo_shopeepay/active</config_path>
+                </field>
+                <field id="title" translate="label" type="text" sortOrder="20"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Title</label>
+                    <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\Field\BareInput</frontend_model>
+                    <config_path>payment/paymongo_shopeepay/title</config_path>
+                    <depends>
+                        <field id="paymongo_payment_methods/info/display_mode">separate</field>
+                    </depends>
+                </field>
+                <field id="sort_order" translate="label" type="text" sortOrder="30"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Sort Order</label>
+                    <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\Field\BareInput</frontend_model>
+                    <frontend_class>validate-number</frontend_class>
+                    <config_path>payment/paymongo_shopeepay/sort_order</config_path>
+                    <depends>
+                        <field id="paymongo_payment_methods/info/display_mode">separate</field>
+                    </depends>
+                </field>
+            </group>
+
+            <!-- BillEase -->
+            <group id="billease" translate="label" type="text" sortOrder="80"
+                   showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>BillEase</label>
+                <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\PaymentMethodRow</frontend_model>
+                <field id="active" translate="label" type="select" sortOrder="10"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enabled</label>
+                    <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\Field\BareInput</frontend_model>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <config_path>payment/paymongo_billease/active</config_path>
+                </field>
+                <field id="title" translate="label" type="text" sortOrder="20"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Title</label>
+                    <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\Field\BareInput</frontend_model>
+                    <config_path>payment/paymongo_billease/title</config_path>
+                    <depends>
+                        <field id="paymongo_payment_methods/info/display_mode">separate</field>
+                    </depends>
+                </field>
+                <field id="sort_order" translate="label" type="text" sortOrder="30"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Sort Order</label>
+                    <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\Field\BareInput</frontend_model>
+                    <frontend_class>validate-number</frontend_class>
+                    <config_path>payment/paymongo_billease/sort_order</config_path>
+                    <depends>
+                        <field id="paymongo_payment_methods/info/display_mode">separate</field>
+                    </depends>
+                </field>
+            </group>
+
+            <!-- BPI Online Banking -->
+            <group id="bpi_online" translate="label" type="text" sortOrder="100"
+                   showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>BPI Online Banking</label>
+                <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\PaymentMethodRow</frontend_model>
+                <field id="active" translate="label" type="select" sortOrder="10"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enabled</label>
+                    <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\Field\BareInput</frontend_model>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <config_path>payment/paymongo_bpi_online/active</config_path>
+                </field>
+                <field id="title" translate="label" type="text" sortOrder="20"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Title</label>
+                    <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\Field\BareInput</frontend_model>
+                    <config_path>payment/paymongo_bpi_online/title</config_path>
+                    <depends>
+                        <field id="paymongo_payment_methods/info/display_mode">separate</field>
+                    </depends>
+                </field>
+                <field id="sort_order" translate="label" type="text" sortOrder="30"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Sort Order</label>
+                    <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\Field\BareInput</frontend_model>
+                    <frontend_class>validate-number</frontend_class>
+                    <config_path>payment/paymongo_bpi_online/sort_order</config_path>
+                    <depends>
+                        <field id="paymongo_payment_methods/info/display_mode">separate</field>
+                    </depends>
+                </field>
+            </group>
+
+            <!-- UnionBank Online Banking -->
+            <group id="unionbank_online" translate="label" type="text" sortOrder="110"
+                   showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>UnionBank Online Banking</label>
+                <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\PaymentMethodRow</frontend_model>
+                <field id="active" translate="label" type="select" sortOrder="10"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enabled</label>
+                    <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\Field\BareInput</frontend_model>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <config_path>payment/paymongo_unionbank_online/active</config_path>
+                </field>
+                <field id="title" translate="label" type="text" sortOrder="20"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Title</label>
+                    <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\Field\BareInput</frontend_model>
+                    <config_path>payment/paymongo_unionbank_online/title</config_path>
+                    <depends>
+                        <field id="paymongo_payment_methods/info/display_mode">separate</field>
+                    </depends>
+                </field>
+                <field id="sort_order" translate="label" type="text" sortOrder="30"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Sort Order</label>
+                    <frontend_model>PayMongo\Payment\Block\Adminhtml\System\Config\Form\Field\BareInput</frontend_model>
+                    <frontend_class>validate-number</frontend_class>
+                    <config_path>payment/paymongo_unionbank_online/sort_order</config_path>
+                    <depends>
+                        <field id="paymongo_payment_methods/info/display_mode">separate</field>
+                    </depends>
+                </field>
+            </group>
+        </section>
+
+        <!--
+            Adds a PayMongo entry to the stock Stores > Configuration > Sales > Payment
+            Methods grid (section "payment", owned by Magento_Payment) — merchants
+            browsing that classic list (rather than the dedicated "PayMongo" tab in the
+            left nav) would otherwise see no mention of PayMongo there at all. Shows a
+            small redirect notice instead of duplicating every field here, the same
+            pattern Mollie's own module uses for its entry on that same page.
+        -->
+        <section id="payment">
+            <group id="paymongo" translate="label" type="text" sortOrder="101"
+                   showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>PayMongo</label>
+                <!--
+                    frontend_model lives on this nested group, not "paymongo" itself, so
+                    "PayMongo" still renders as a normal labeled, collapsible row on the
+                    page — matching every sibling entry (Check/Money Order, Bank Transfer,
+                    etc.) — with the redirect notice as its expandable content, rather than
+                    replacing the whole row's rendering and losing that label/collapse
+                    behavior (a group-level frontend_model replaces everything, header
+                    included — see Block\Adminhtml\System\Config\Form\PaymentMethodRow for
+                    where that's actually wanted, elsewhere in this module).
+                -->
+                <group id="notice" translate="label" type="text" sortOrder="0"
+                       showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Branding</label>
+                    <frontend_model>PayMongo\Payment\Block\Adminhtml\Render\PaymentMethodsRedirectNotice</frontend_model>
+                </group>
+            </group>
+        </section>
+    </system>
+</config>

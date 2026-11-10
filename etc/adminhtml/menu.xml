@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="PayMongo_Payment::paymongo"
+             title="PayMongo"
+             translate="title"
+             module="PayMongo_Payment"
+             sortOrder="80"
+             parent="Magento_Sales::sales"
+             resource="PayMongo_Payment::paymongo"/>
+
+        <add id="PayMongo_Payment::reconciliation_menu"
+             title="Reconciliation"
+             translate="title"
+             module="PayMongo_Payment"
+             sortOrder="10"
+             parent="PayMongo_Payment::paymongo"
+             action="paymongo/reconciliation/index"
+             resource="PayMongo_Payment::reconciliation"/>
+    </menu>
+</config>

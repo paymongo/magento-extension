@@ -1,0 +1,51 @@
+<?php
+/**
+ * Loads the collapsed PayMongo group's client-side scripts once, outside the
+ * Magewire-reactive checkout.payment.methods fragment — see
+ * js/checkout/group-paymongo-methods.js for why it needs to run outside the fragment
+ * it manipulates.
+ *
+ * Also carries the group-label data (group order, translated group names, method code
+ * to group mapping) across to those scripts, since Hyvä Checkout has no equivalent of
+ * Luma's window.checkoutConfig for a module to add to.
+ *
+ * Emitted as <script type="application/json"> rather than an inline assignment: that
+ * type is data, not executable script, so it needs no Content-Security-Policy
+ * allowance the way an inline <script> would.
+ */
+
+declare(strict_types=1);
+
+use PayMongo\Payment\Model\Checkout\MethodGroupLabel;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+
+/** @var Template $block */
+/** @var Escaper $escaper */
+
+/**
+ * Null whenever PayMongo_PaymentHyva predates this feature and its layout XML passes no
+ * view model. The scripts fall back to the plain "PayMongo" label in that case rather
+ * than failing, so this module may run ahead of its Hyvä sibling.
+ *
+ * The reverse skew is not survivable here and is not meant to be: PayMongo_PaymentHyva
+ * names Model\Checkout\MethodGroupLabel in an xsi:type="object" layout argument, which
+ * Magento instantiates while generating the layout — before this template runs at all.
+ * Against a core without that class the block fails to generate and takes both scripts
+ * with it, so the methods render ungrouped. That is prevented by the version floor in
+ * the Hyvä module's composer.json (paymongo/module-magento2-paymongo ^2.0.1), not by any check
+ * this template could make, which is also why core is released before Hyvä.
+ */
+$groupLabel = $block->getData('view_model');
+$groupConfig = $groupLabel instanceof MethodGroupLabel ? $groupLabel->getJsConfig() : null;
+?>
+<?php if ($groupConfig !== null): ?>
+<script type="application/json" id="paymongo-method-group-config">
+    <?= /* @noEscape */ json_encode(
+        $groupConfig,
+        JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE
+    ) ?>
+</script>
+<?php endif; ?>
+<script src="<?= $escaper->escapeUrl($block->getViewFileUrl('PayMongo_Payment::js/checkout/paymongo-group-label.js')) ?>" defer></script>
+<script src="<?= $escaper->escapeUrl($block->getViewFileUrl('PayMongo_Payment::js/checkout/group-paymongo-methods.js')) ?>" defer></script>

@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Acl/etc/acl.xsd">
+    <acl>
+        <resources>
+            <resource id="Magento_Backend::admin">
+                <resource id="Magento_Backend::stores">
+                    <resource id="Magento_Backend::stores_settings">
+                        <resource id="Magento_Config::config">
+                            <resource id="Magento_Payment::payment">
+                                <!-- Both config sections and the capabilities controller all
+                                     require PayMongo_Payment::config. A child "view" resource
+                                     used to be declared here but nothing ever referenced it, so
+                                     granting it conferred nothing and it only made roles look
+                                     as though a read-only tier existed. -->
+                                <resource id="PayMongo_Payment::config" title="PayMongo Payment" sortOrder="10"/>
+                            </resource>
+                        </resource>
+                    </resource>
+                </resource>
+                <resource id="Magento_Sales::sales">
+                    <resource id="PayMongo_Payment::paymongo" title="PayMongo" sortOrder="80">
+                        <resource id="PayMongo_Payment::reconciliation"
+                                  title="PayMongo — Payment Reconciliation"
+                                  sortOrder="10"/>
+                    </resource>
+                </resource>
+            </resource>
+        </resources>
+    </acl>
+</config>

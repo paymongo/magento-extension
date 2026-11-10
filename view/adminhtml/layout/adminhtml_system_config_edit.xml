@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<!--
+    Loads the module's admin stylesheet and the Payment Action / Display Mode script on
+    the configuration screens only.
+
+    This used to live in an adminhtml default.xml, which meant ~550 lines of CSS were
+    shipped as an extra render-blocking stylesheet on every single admin page — every
+    grid, every order view, the dashboard — to style three screens. There is no
+    per-section handle for System Config (Magento\Config\Controller\Adminhtml\System\Config\Edit
+    adds none), so this handle covers all config sections; that is the narrowest available
+    target and still a large improvement over every admin page.
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="PayMongo_Payment::css/styles.css"/>
+    </head>
+    <body>
+        <referenceContainer name="js">
+            <block class="Magento\Backend\Block\Template"
+                   name="paymongo.system.config.payment_action_mode"
+                   template="PayMongo_Payment::system/config/payment-action-mode.phtml"/>
+        </referenceContainer>
+    </body>
+</page>

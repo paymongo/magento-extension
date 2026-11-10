@@ -1,0 +1,44 @@
+type Query {
+    paymongoPaymentMethods: [PaymongoPaymentMethod!]!
+        @resolver(class: "PayMongo\\Payment\\Model\\Resolver\\PaymentMethods")
+        @doc(description: "List of enabled PayMongo payment methods for this store")
+
+    paymongoOrderStatus(
+        order_number: String! @doc(description: "Magento order increment ID, e.g. 000000055")
+    ): PaymongoOrderStatus
+        @resolver(class: "PayMongo\\Payment\\Model\\Resolver\\OrderPaymentStatus")
+        @doc(description: "PayMongo payment status for a placed order — requires customer authentication")
+}
+
+type Mutation {
+    createPaymongoCheckoutSession(
+        input: CreatePaymongoSessionInput! @doc(description: "Cart and method details")
+    ): PaymongoSession
+        @resolver(class: "PayMongo\\Payment\\Model\\Resolver\\CreateCheckoutSession")
+        @doc(description: "Create a PayMongo hosted checkout session for a cart")
+}
+
+type PaymongoPaymentMethod @doc(description: "A single enabled PayMongo payment method.") {
+    code: String! @doc(description: "Magento payment method code, e.g. paymongo_gcash")
+    title: String! @doc(description: "Customer-facing label configured in Magento admin")
+    paymongo_type: String! @doc(description: "PayMongo API payment_method_type, e.g. gcash")
+}
+
+input CreatePaymongoSessionInput @doc(description: "Input for creating a PayMongo checkout session.") {
+    cart_id: String! @doc(description: "Magento cart masked ID")
+    method_code: String! @doc(description: "PayMongo payment method code")
+}
+
+type PaymongoSession @doc(description: "A PayMongo hosted checkout session.") {
+    session_id: String! @doc(description: "PayMongo checkout session ID (cs_...)")
+    checkout_url: String! @doc(description: "URL to redirect the customer to complete payment")
+    payment_method_type: String! @doc(description: "The payment method type used, e.g. gcash")
+}
+
+type PaymongoOrderStatus @doc(description: "PayMongo payment status for a Magento order.") {
+    order_increment_id: String! @doc(description: "Magento order increment ID")
+    order_state: String! @doc(description: "Magento order state, e.g. processing, pending_payment")
+    session_status: String @doc(description: "PayMongo checkout session status, e.g. active, paid, expired")
+    payment_id: String @doc(description: "PayMongo payment ID if payment has been captured (pay_...)")
+    payment_intent_id: String @doc(description: "PayMongo payment intent ID (pi_...)")
+}

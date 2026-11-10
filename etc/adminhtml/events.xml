@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <!--
+        Show when an Authorize Only order's card hold expires on the order page and the
+        New Shipment page, and warn when it has expired or is about to.
+    -->
+    <event name="controller_action_predispatch_sales_order_view">
+        <observer name="paymongo_warn_authorization_expiry"
+                  instance="PayMongo\Payment\Observer\Adminhtml\WarnAuthorizationExpiry"/>
+    </event>
+    <event name="controller_action_predispatch_adminhtml_order_shipment_new">
+        <observer name="paymongo_warn_authorization_expiry"
+                  instance="PayMongo\Payment\Observer\Adminhtml\WarnAuthorizationExpiry"/>
+    </event>
+</config>

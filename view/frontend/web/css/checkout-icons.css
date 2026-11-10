@@ -1,0 +1,98 @@
+/**
+ * PayMongo payment-method checkout icons — shared between Hyva Checkout
+ * (PayMongo_PaymentHyva's view/frontend/layout/hyva_checkout_components.xml) and
+ * Luma / standard checkout
+ * (view/frontend/layout/checkout_index_index.xml, view/frontend/web/template/payment/
+ * paymongo-method.html).
+ *
+ * A real stylesheet rather than inline styles specifically so icon size can shrink on
+ * narrow viewports via the media query below — an inline style="" attribute has no way
+ * to respond to viewport width on its own.
+ */
+.paymongo-icon-group {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 4px;
+    max-width: 100%;
+    min-width: 0;
+}
+
+/*
+ * Hyva Checkout's own method-list template wraps the icon in <span class="shrink-0">
+ * (Tailwind's flex-shrink: 0), so the whole icon group is treated as one non-shrinkable
+ * flex item by the row — it just overflows instead of shrinking or wrapping, regardless
+ * of flex-wrap set above. "shrink-0" is a generic Tailwind utility reused all over the
+ * page, so it can't be safely overridden broadly — :has() scopes this to only the
+ * specific shrink-0 span that's actually wrapping our icon group.
+ */
+.shrink-0:has(> .paymongo-icon-group) {
+    flex-shrink: 1;
+    min-width: 0;
+}
+
+.paymongo-icon,
+.paymongo-icon-badge {
+    box-sizing: border-box;
+    width: 56px;
+    height: 36px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 6px;
+    background: #ffffff;
+    flex-shrink: 0;
+}
+
+.paymongo-icon {
+    object-fit: contain;
+    object-position: center;
+}
+
+.paymongo-icon-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: #514943;
+}
+
+/*
+ * The all-in-one method's row can have up to 3 items (Card's 2 logos + the overflow
+ * badge, or 2 single-method logos + the badge) competing with the "PayMongo" label for
+ * space, so a modest size reduction alone isn't enough to avoid the row wrapping into a
+ * tall stacked column on the narrowest common phone widths (~320-375px) — confirmed via
+ * live testing that even a right-aligned, wrapped version of the icon row still made
+ * that row noticeably taller than every sibling payment method row at that width.
+ */
+@media (max-width: 600px) {
+    .paymongo-icon-group {
+        gap: 3px;
+    }
+
+    .paymongo-icon,
+    .paymongo-icon-badge {
+        width: 36px;
+        height: 32px;
+        padding: 3px;
+        border-radius: 4px;
+    }
+
+    .paymongo-icon-badge {
+        font-size: 10px;
+    }
+}
+
+/*
+ * Below this, icons are hidden entirely rather than shrunk further — at this width even
+ * a reduced-to-2 icon set risks wrapping/looking cramped, and logos this small aren't
+ * legible as brand marks anyway. The "PayMongo" label alone matches every other payment
+ * method row's plain single-line look instead of standing out with a stacked column.
+ */
+@media (max-width: 380px) {
+    .paymongo-icon-group,
+    .paymongo-icon {
+        display: none;
+    }
+}

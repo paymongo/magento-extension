@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\Sales\Block\Adminhtml\Order\View">
+        <plugin name="paymongo_order_view_refresh_button"
+                type="PayMongo\Payment\Plugin\Block\Adminhtml\Order\AddRefreshButton"
+                sortOrder="10"/>
+        <plugin name="paymongo_order_view_capture_button"
+                type="PayMongo\Payment\Plugin\Block\Adminhtml\Order\AddCaptureButton"
+                sortOrder="20"/>
+    </type>
+</config>

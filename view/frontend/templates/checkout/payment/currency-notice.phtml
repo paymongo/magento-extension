@@ -1,0 +1,24 @@
+<?php
+
+declare(strict_types=1);
+
+use PayMongo\Payment\Model\ViewModel\CurrencyCheck;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+
+/** @var Template $block */
+/** @var Escaper $escaper */
+/** @var CurrencyCheck $viewModel */
+$viewModel = $block->getData('view_model');
+
+if ($viewModel->isPhpCurrency()) {
+    return;
+}
+?>
+<div class="message notice mb-4">
+    <span>
+        <?= $escaper->escapeHtml(
+            __('PayMongo payment methods are only available for Philippine Peso (PHP) orders.')
+        ) ?>
+    </span>
+</div>

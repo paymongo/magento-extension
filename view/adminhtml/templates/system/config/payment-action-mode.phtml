@@ -1,0 +1,28 @@
+<?php
+/**
+ * Wires up js/payment-action-mode.js on the System Configuration screens. Every id and
+ * class name below comes from Model\Config\AdminMarkup, which is shared with
+ * Block\Adminhtml\Render\PaymentMethodsTable so the two cannot drift apart. The
+ * component bails out quietly when the display mode field is absent, which is every
+ * config section other than PayMongo > Payment Methods, plus store scope.
+ *
+ * @var \Magento\Backend\Block\Template $block
+ */
+
+use PayMongo\Payment\Model\Config\AdminMarkup;
+use PayMongo\Payment\Model\Config\Source\PaymentDisplayMode;
+
+$config = [
+    'displayModeSelector' => AdminMarkup::selector(AdminMarkup::FIELD_DISPLAY_MODE),
+    'tableSelector' => '.' . AdminMarkup::TABLE,
+    'unifiedClass' => AdminMarkup::TABLE_UNIFIED,
+    'unifiedValue' => PaymentDisplayMode::UNIFIED,
+];
+?>
+<script type="text/x-magento-init">
+    {
+        "*": {
+            "PayMongo_Payment/js/payment-action-mode": <?= /* @noEscape */ json_encode($config) ?>
+        }
+    }
+</script>
